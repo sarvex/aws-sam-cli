@@ -1742,7 +1742,7 @@ class TestSamFunctionProvider_get_all(TestCase):
     def test_must_work_with_no_functions(self):
         provider = SamFunctionProvider([])
 
-        result = [f for f in provider.get_all()]
+        result = list(provider.get_all())
         self.assertEqual(result, [])
 
 
@@ -1852,9 +1852,7 @@ class TestRefreshableSamFunctionProvider(TestCase):
             [call("template.yaml"), call("child/template.yaml"), call("child/child/template.yaml")]
         )
 
-        functions = []
-        for func in provider.get_all():
-            functions.append(func)
+        functions = list(provider.get_all())
         self.assertEqual(functions, ["bar", "bar2"])
 
     @patch("samcli.lib.providers.sam_function_provider.SamLocalStackProvider.get_stacks")
@@ -1891,9 +1889,7 @@ class TestRefreshableSamFunctionProvider(TestCase):
 
         self.file_observer.watch.reset_mock()
 
-        functions = []
-        for func in provider.get_all():
-            functions.append(func)
+        functions = list(provider.get_all())
         self.assertEqual(functions, ["bar", "bar2"])
         self.assertFalse(provider.is_changed)
 
@@ -2018,9 +2014,7 @@ class TestRefreshableSamFunctionProvider(TestCase):
 
         self.file_observer.watch.assert_not_called()
 
-        functions = []
-        for func in provider.get_all():
-            functions.append(func)
+        functions = list(provider.get_all())
         self.assertEqual(functions, ["bar"])
 
     @patch("samcli.lib.providers.sam_function_provider.FileObserver")
@@ -2044,9 +2038,7 @@ class TestRefreshableSamFunctionProvider(TestCase):
         )
 
         self.file_observer.watch.reset_mock()
-        functions = []
-        for func in provider.get_all():
-            functions.append(func)
+        functions = list(provider.get_all())
         self.assertEqual(functions, ["bar"])
         self.assertFalse(provider.is_changed)
         self.file_observer.watch.assert_not_called()

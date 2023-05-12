@@ -67,10 +67,12 @@ class AutoDependencyLayerSyncFlow(AbstractLayerSyncFlow):
 
         # find layer's physical id
         layer_name = NestedStackBuilder.get_layer_name(self._deploy_context.stack_name, self._function_identifier)
-        layer_versions = self._lambda_client.list_layer_versions(LayerName=layer_name).get("LayerVersions", [])
-        if not layer_versions:
+        if layer_versions := self._lambda_client.list_layer_versions(
+            LayerName=layer_name
+        ).get("LayerVersions", []):
+            self._layer_arn = layer_versions[0].get("LayerVersionArn").rsplit(":", 1)[0]
+        else:
             raise NoLayerVersionsFoundError(layer_name)
-        self._layer_arn = layer_versions[0].get("LayerVersionArn").rsplit(":", 1)[0]
 
     def gather_resources(self) -> None:
         function_build_definitions = cast(BuildGraph, self._build_graph).get_function_build_definitions()
@@ -84,7 +86,7 @@ class AutoDependencyLayerSyncFlow(AbstractLayerSyncFlow):
             self._function_identifier,
             self._get_compatible_runtimes()[0],
         )
-        zip_file_path = os.path.join(tempfile.gettempdir(), "data-" + uuid.uuid4().hex)
+        zip_file_path = os.path.join(tempfile.gettempdir(), f"data-{uuid.uuid4().hex}")
         self._zip_file = make_zip(zip_file_path, self._artifact_folder)
         self._local_sha = file_checksum(cast(str, self._zip_file), hashlib.sha256())
 

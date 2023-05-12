@@ -50,11 +50,12 @@ def parse_time(time_str: str, property_name: str):
     if not time_str:
         return None
 
-    parsed = parse_date(time_str)
-    if not parsed:
-        raise InvalidTimestampError("Unable to parse the time provided by '{}'".format(property_name))
-
-    return to_utc(parsed)
+    if parsed := parse_date(time_str):
+        return to_utc(parsed)
+    else:
+        raise InvalidTimestampError(
+            f"Unable to parse the time provided by '{property_name}'"
+        )
 
 
 class ResourcePhysicalIdResolver:

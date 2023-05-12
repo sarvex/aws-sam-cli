@@ -54,9 +54,7 @@ class TestBootstrap(BootstrapIntegBase):
         if create_image_repository:
             inputs.append("")  # Create image repository
 
-        inputs.append("")  # Confirm summary
-        inputs.append("y")  # Create resources
-
+        inputs.extend(("", "y"))
         bootstrap_process_execute = run_command_with_inputs(bootstrap_command_list, inputs)
 
         self.assertEqual(bootstrap_process_execute.process.returncode, 0)
@@ -163,10 +161,9 @@ class TestBootstrap(BootstrapIntegBase):
         stacks = response["Stacks"]
         self.assertTrue(len(stacks) > 0)  # in case stack name is invalid
         stack_outputs = stacks[0]["Outputs"]
-        output_values = {}
-        for value in stack_outputs:
-            output_values[value["OutputKey"]] = value["OutputValue"]
-
+        output_values = {
+            value["OutputKey"]: value["OutputValue"] for value in stack_outputs
+        }
         # Get values saved in config file
         config = SamConfig(PIPELINE_CONFIG_DIR, PIPELINE_CONFIG_FILENAME)
         config_values = config.get_all(["pipeline", "bootstrap"], "parameters", stage_configuration_name)

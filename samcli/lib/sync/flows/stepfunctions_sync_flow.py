@@ -50,7 +50,7 @@ class StepFunctionsSyncFlow(SyncFlow):
             build_context,
             deploy_context,
             physical_id_mapping,
-            log_name="StepFunctions " + state_machine_identifier,
+            log_name=f"StepFunctions {state_machine_identifier}",
             stacks=stacks,
         )
         self._state_machine_identifier = state_machine_identifier
@@ -66,8 +66,9 @@ class StepFunctionsSyncFlow(SyncFlow):
     def gather_resources(self) -> None:
         if not self._resource:
             return
-        definition_substitutions = self._resource.get("Properties", dict()).get("DefinitionSubstitutions", None)
-        if definition_substitutions:
+        if definition_substitutions := self._resource.get("Properties", {}).get(
+            "DefinitionSubstitutions", None
+        ):
             raise InfraSyncRequiredError(self._state_machine_identifier, "DefinitionSubstitutions field is specified.")
         self._definition_uri = self._get_definition_file(self._state_machine_identifier)
         self._states_definition = self._process_definition_file()
@@ -76,8 +77,7 @@ class StepFunctionsSyncFlow(SyncFlow):
         if self._definition_uri is None:
             return None
         with open(self._definition_uri, "r", encoding="utf-8") as states_file:
-            states_data = states_file.read()
-            return states_data
+            return states_file.read()
 
     def _get_definition_file(self, state_machine_identifier: str) -> Optional[str]:
         if self._resource is None:

@@ -65,5 +65,4 @@ class ResourceTypeBasedFactory(ABC, Generic[T]):
         if not resource_type:
             LOG.debug("Resource %s has invalid property Type.", str(resource_identifier))
             return None
-        generator = self._get_generator_mapping().get(resource_type, None)
-        return generator
+        return self._get_generator_mapping().get(resource_type, None)

@@ -98,14 +98,11 @@ class SamFunctionProvider(SamBaseProvider):
             resolved_function = self.functions.get(name)
 
         if not resolved_function:
-            # If function is not found by full path, search through all functions
-
-            found_fs = []
-
-            for f in self.get_all():
-                if name in (f.function_id, f.name, f.functionname):
-                    found_fs.append(f)
-
+            found_fs = [
+                f
+                for f in self.get_all()
+                if name in (f.function_id, f.name, f.functionname)
+            ]
             # If multiple functions are found, only return one of them
             if len(found_fs) > 1:
                 found_fs.sort(key=lambda f0: f0.full_path.lower())
@@ -490,10 +487,9 @@ class SamFunctionProvider(SamBaseProvider):
             # In the list of layers that is defined within a template, you can reference a LayerVersion resource.
             # When running locally, we need to follow that Ref so we can extract the local path to the layer code.
             if isinstance(layer, dict) and layer.get("Ref"):
-                found_layer = SamFunctionProvider._locate_layer_from_ref(
+                if found_layer := SamFunctionProvider._locate_layer_from_ref(
                     stack, layer, use_raw_codeuri, ignore_code_extraction_warnings
-                )
-                if found_layer:
+                ):
                     layers.append(found_layer)
             else:
                 LOG.debug(
@@ -543,10 +539,14 @@ class SamFunctionProvider(SamBaseProvider):
         )
 
     def get_resources_by_stack_path(self, stack_path: str) -> Dict:
-        candidates = [stack.resources for stack in self._stacks if stack.stack_path == stack_path]
-        if not candidates:
+        if candidates := [
+            stack.resources
+            for stack in self._stacks
+            if stack.stack_path == stack_path
+        ]:
+            return candidates[0]
+        else:
             raise RuntimeError(f"Cannot find resources with stack_path = {stack_path}")
-        return candidates[0]
 
     @staticmethod
     def _metadata_has_necessary_entries_for_image_function_to_be_built(metadata: Optional[Dict[str, Any]]) -> bool:
@@ -606,11 +606,9 @@ class RefreshableSamFunctionProvider(SamFunctionProvider):
         self._ignore_code_extraction_warnings = ignore_code_extraction_warnings
         self._parameter_overrides = parameter_overrides
         self._global_parameter_overrides = global_parameter_overrides
-        self.parent_templates_paths = []
-        for stack in self._stacks:
-            if stack.is_root_stack:
-                self.parent_templates_paths.append(stack.location)
-
+        self.parent_templates_paths = [
+            stack.location for stack in self._stacks if stack.is_root_stack
+        ]
         self.is_changed = False
         self._observer = FileObserver(self._set_templates_changed)
         self._observer.start()

@@ -88,13 +88,13 @@ class TestDelete(PackageIntegBase, DeployIntegBase, DeleteIntegBase):
 
         stack_name = self._method_to_stack_name(self.id())
 
-        config_file_name = stack_name + ".toml"
+        config_file_name = f"{stack_name}.toml"
         deploy_command_list = self.get_deploy_command_list(
             template_file=template_path, guided=True, config_file=config_file_name
         )
 
         deploy_process_execute = run_command_with_input(
-            deploy_command_list, "{}\n\n\n\n\n\n\n\n\n".format(stack_name).encode()
+            deploy_command_list, f"{stack_name}\n\n\n\n\n\n\n\n\n".encode()
         )
 
         config_file_path = self.test_data_path.joinpath(config_file_name)
@@ -125,7 +125,7 @@ class TestDelete(PackageIntegBase, DeployIntegBase, DeleteIntegBase):
 
         stack_name = self._method_to_stack_name(self.id())
 
-        config_file_name = stack_name + ".toml"
+        config_file_name = f"{stack_name}.toml"
         deploy_command_list = self.get_deploy_command_list(
             template_file=template_path, guided=True, config_file=config_file_name, image_repository=self.ecr_repo_name
         )
@@ -162,13 +162,13 @@ class TestDelete(PackageIntegBase, DeployIntegBase, DeleteIntegBase):
 
         stack_name = self._method_to_stack_name(self.id())
 
-        config_file_name = stack_name + ".toml"
+        config_file_name = f"{stack_name}.toml"
         deploy_command_list = self.get_deploy_command_list(
             template_file=template_path, guided=True, config_file=config_file_name
         )
 
         deploy_process_execute = run_command_with_input(
-            deploy_command_list, "{}\n\n\n\n\n\n\n\n\n".format(stack_name).encode()
+            deploy_command_list, f"{stack_name}\n\n\n\n\n\n\n\n\n".encode()
         )
 
         config_file_path = self.test_data_path.joinpath(config_file_name)
@@ -201,7 +201,7 @@ class TestDelete(PackageIntegBase, DeployIntegBase, DeleteIntegBase):
         deploy_command_list = self.get_deploy_command_list(template_file=template_path, guided=True)
 
         deploy_process_execute = run_command_with_input(
-            deploy_command_list, "{}\n\n\n\n\nn\n\n\n".format(stack_name).encode()
+            deploy_command_list, f"{stack_name}\n\n\n\n\nn\n\n\n".encode()
         )
 
         delete_command_list = self.get_delete_command_list(stack_name=stack_name, region="us-east-1", no_prompts=True)
@@ -419,7 +419,9 @@ class TestDelete(PackageIntegBase, DeployIntegBase, DeleteIntegBase):
         deploy_process_execute = run_command(deploy_command_list)
 
         delete_command_list = self.get_delete_command_list()
-        delete_process_execute = run_command_with_input(delete_command_list, "{}\ny\ny\n".format(stack_name).encode())
+        delete_process_execute = run_command_with_input(
+            delete_command_list, f"{stack_name}\ny\ny\n".encode()
+        )
 
         self.assertEqual(delete_process_execute.process.returncode, 0)
 

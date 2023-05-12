@@ -50,7 +50,7 @@ class FunctionSyncFlow(SyncFlow):
             build_context,
             deploy_context,
             physical_id_mapping,
-            log_name="Lambda Function " + function_identifier,
+            log_name=f"Lambda Function {function_identifier}",
             stacks=stacks,
         )
         self._function_identifier = function_identifier
@@ -76,14 +76,15 @@ class FunctionSyncFlow(SyncFlow):
             FunctionName=self.get_physical_id(self._function_identifier), WaiterConfig=self._lambda_waiter_config
         )
         LOG.debug("%sRemote Function Updated", self.log_prefix)
-        sync_flows: List[SyncFlow] = list()
+        sync_flows: List[SyncFlow] = []
 
         function_resource = self._get_resource(self._function_identifier)
         if not function_resource:
             raise FunctionNotFound(f"Unable to find function {self._function_identifier}")
 
-        auto_publish_alias_name = function_resource.get("Properties", dict()).get("AutoPublishAlias", None)
-        if auto_publish_alias_name:
+        if auto_publish_alias_name := function_resource.get("Properties", {}).get(
+            "AutoPublishAlias", None
+        ):
             sync_flows.append(
                 AliasVersionSyncFlow(
                     self._function_identifier,

@@ -391,8 +391,7 @@ def execute_code_sync(
     )
 
     for resource_id in sync_flow_resource_ids:
-        sync_flow = factory.create_sync_flow(resource_id)
-        if sync_flow:
+        if sync_flow := factory.create_sync_flow(resource_id):
             executor.add_sync_flow(sync_flow)
         else:
             LOG.warning("Cannot create SyncFlow for %s. Skipping.", resource_id)

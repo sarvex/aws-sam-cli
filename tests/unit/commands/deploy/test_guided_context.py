@@ -925,7 +925,7 @@ class TestGuidedContext(TestCase):
                     show_default=False,
                 ),
             ]
-            expected_code_sign_calls = expected_code_sign_calls * (number_of_functions + number_of_layers)
+            expected_code_sign_calls *= number_of_functions + number_of_layers
             self.assertEqual(expected_code_sign_calls, patched_code_signer_prompt.call_args_list)
 
     @patch("samcli.commands.deploy.guided_context.get_resource_full_path_by_id")

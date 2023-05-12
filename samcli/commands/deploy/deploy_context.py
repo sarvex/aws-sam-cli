@@ -121,7 +121,8 @@ class DeployContext:
 
         if not isinstance(template_dict, dict):
             raise deploy_exceptions.DeployFailedError(
-                stack_name=self.stack_name, msg="{} not in required format".format(self.template_file)
+                stack_name=self.stack_name,
+                msg=f"{self.template_file} not in required format",
             )
 
         parameters = self.merge_parameters(template_dict, self.parameter_overrides)

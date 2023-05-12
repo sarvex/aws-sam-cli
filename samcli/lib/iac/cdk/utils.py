@@ -20,14 +20,13 @@ def is_cdk_project(template: Dict) -> bool:
 
     """
     resources = template.get("Resources", {})
-    cdk_project_conditions = any(
+    return any(
         [
             _resource_level_metadata_exists(resources),
             _cdk_path_metadata_exists(resources),
             _relevant_cdk_files_are_present(),
         ]
     )
-    return cdk_project_conditions
 
 
 def _resource_level_metadata_exists(resources: Dict) -> bool:
@@ -40,10 +39,10 @@ def _resource_level_metadata_exists(resources: Dict) -> bool:
         Dict of resources to look through
 
     """
-    for _, resource in resources.items():
-        if resource.get("Type", "") == CDK_METADATA_TYPE_VALUE:
-            return True
-    return False
+    return any(
+        resource.get("Type", "") == CDK_METADATA_TYPE_VALUE
+        for _, resource in resources.items()
+    )
 
 
 def _cdk_path_metadata_exists(resources: Dict) -> bool:

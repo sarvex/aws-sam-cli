@@ -37,7 +37,7 @@ class TestSamCdkIntegration(TestCase):
         cls.build()
 
         cls.start_api()
-        cls.url = "http://127.0.0.1:{}".format(cls.api_port)
+        cls.url = f"http://127.0.0.1:{cls.api_port}"
 
     @classmethod
     def build_cdk_project(cls):
@@ -49,11 +49,9 @@ class TestSamCdkIntegration(TestCase):
 
     @classmethod
     def build(cls):
-        command = "sam"
-        if os.getenv("SAM_CLI_DEV"):
-            command = "samdev"
+        command = "samdev" if os.getenv("SAM_CLI_DEV") else "sam"
         command_list = [command, "build", "-t", cls.cdk_stack_template]
-        working_dir = cls.cdk_project + "/cdk.out"
+        working_dir = f"{cls.cdk_project}/cdk.out"
         result = run_command(command_list, cwd=working_dir)
         if result.process.returncode != 0:
             raise Exception("sam build command failed")
@@ -66,7 +64,7 @@ class TestSamCdkIntegration(TestCase):
 
         command_list = [command, "local", "start-api", "-p", cls.api_port]
 
-        working_dir = cls.cdk_project + "/cdk.out"
+        working_dir = f"{cls.cdk_project}/cdk.out"
         cls.start_api_process = Popen(command_list, cwd=working_dir, stderr=PIPE)
 
         while True:

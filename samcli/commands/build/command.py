@@ -258,6 +258,8 @@ def _get_mode_value_from_envvar(name: str, choices: List[str]) -> Optional[str]:
         return None
 
     if mode not in choices:
-        raise click.UsageError("Invalid value for 'mode': invalid choice: {}. (choose from {})".format(mode, choices))
+        raise click.UsageError(
+            f"Invalid value for 'mode': invalid choice: {mode}. (choose from {choices})"
+        )
 
     return mode

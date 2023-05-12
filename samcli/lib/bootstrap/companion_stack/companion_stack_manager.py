@@ -85,7 +85,7 @@ class CompanionStackManager:
         """
         self._builder.clear_functions()
         if image_repositories is None:
-            image_repositories = dict()
+            image_repositories = {}
         for function_logical_id in function_logical_ids:
             if function_logical_id not in image_repositories or self.is_repo_uri(
                 image_repositories.get(function_logical_id), function_logical_id
@@ -117,8 +117,7 @@ class CompanionStackManager:
 
         template_url = s3_uploader.to_path_style_s3_url(parts["Key"], parts.get("Version", None))
 
-        exists = self.does_companion_stack_exist()
-        if exists:
+        if exists := self.does_companion_stack_exist():
             self._cfn_client.update_stack(
                 StackName=stack_name, TemplateURL=template_url, Capabilities=["CAPABILITY_AUTO_EXPAND"]
             )
@@ -153,13 +152,16 @@ class CompanionStackManager:
         """
         if not self.does_companion_stack_exist():
             return []
-        repos: List[ECRRepo] = list()
+        repos: List[ECRRepo] = []
         stack = boto3.resource("cloudformation", config=self._boto_config).Stack(self._companion_stack.stack_name)
-        for resource in stack.resource_summaries.all():
-            if resource.resource_type == "AWS::ECR::Repository":
-                repos.append(
-                    ECRRepo(logical_id=resource.logical_resource_id, physical_id=resource.physical_resource_id)
-                )
+        repos.extend(
+            ECRRepo(
+                logical_id=resource.logical_resource_id,
+                physical_id=resource.physical_resource_id,
+            )
+            for resource in stack.resource_summaries.all()
+            if resource.resource_type == "AWS::ECR::Repository"
+        )
         return repos
 
     def get_unreferenced_repos(self) -> List[ECRRepo]:
@@ -177,7 +179,7 @@ class CompanionStackManager:
         deployed_repos: List[ECRRepo] = self.list_deployed_repos()
         current_mapping = self._builder.repo_mapping
 
-        unreferenced_repos: List[ECRRepo] = list()
+        unreferenced_repos: List[ECRRepo] = []
         for deployed_repo in deployed_repos:
             for _, current_repo in current_mapping.items():
                 if current_repo.logical_id == deployed_repo.logical_id:
@@ -242,7 +244,10 @@ class CompanionStackManager:
         Dict[str, str]
             Dictionary with key as function logical ID and value as ECR repo URI.
         """
-        return dict((k, self.get_repo_uri(v)) for (k, v) in self._builder.repo_mapping.items())
+        return {
+            k: self.get_repo_uri(v)
+            for (k, v) in self._builder.repo_mapping.items()
+        }
 
     def get_repo_uri(self, repo: ECRRepo) -> str:
         """
@@ -314,6 +319,6 @@ def sync_ecr_stack(
         function.full_path for function in function_provider.get_all() if function.packagetype == IMAGE
     ]
     manager.set_functions(function_logical_ids, image_repositories)
-    image_repositories.update(manager.get_repository_mapping())
+    image_repositories |= manager.get_repository_mapping()
     manager.sync_repos()
     return image_repositories

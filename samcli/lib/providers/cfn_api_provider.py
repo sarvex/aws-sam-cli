@@ -141,9 +141,7 @@ class CfnApiProvider(CfnBaseApiProvider):
         rest_api_resource_type = resources.get(logical_id, {}).get("Type")
         if rest_api_resource_type != AWS_APIGATEWAY_RESTAPI:
             raise InvalidSamTemplateException(
-                "The AWS::ApiGateway::Stage must have a valid RestApiId that points to RestApi resource {}".format(
-                    logical_id
-                )
+                f"The AWS::ApiGateway::Stage must have a valid RestApiId that points to RestApi resource {logical_id}"
             )
 
         collector.stage_name = stage_name
@@ -186,9 +184,7 @@ class CfnApiProvider(CfnBaseApiProvider):
 
         resource_path = "/"
         if isinstance(resource_id, str):  # If the resource_id resolves to a string
-            resource = resources.get(resource_id)
-
-            if resource:
+            if resource := resources.get(resource_id):
                 resource_path = self.resolve_resource_path(resources, resource, "")
             else:
                 # This is the case that a raw ref resolves to a string { "Fn::GetAtt": ["MyRestApi", "RootResourceId"] }
@@ -317,7 +313,7 @@ class CfnApiProvider(CfnBaseApiProvider):
         if not route_key or not method or not path:
             LOG.debug("The AWS::ApiGatewayV2::Route '%s' does not have a correct route key '%s'", logical_id, route_key)
             raise InvalidSamTemplateException(
-                "The AWS::ApiGatewayV2::Route {} does not have a correct route key {}".format(logical_id, route_key)
+                f"The AWS::ApiGatewayV2::Route {logical_id} does not have a correct route key {route_key}"
             )
 
         routes = Route(
@@ -355,13 +351,14 @@ class CfnApiProvider(CfnBaseApiProvider):
         properties = resource.get("Properties", {})
         parent_id = cast(str, properties.get("ParentId"))
         resource_path = cast(str, properties.get("PathPart"))
-        parent = resources.get(parent_id)
-        if parent:
-            return self.resolve_resource_path(resources, parent, "/" + resource_path + current_path)
+        if parent := resources.get(parent_id):
+            return self.resolve_resource_path(
+                resources, parent, f"/{resource_path}{current_path}"
+            )
         if parent_id:
             return parent_id + resource_path + current_path
 
-        return "/" + resource_path + current_path
+        return f"/{resource_path}{current_path}"
 
     @staticmethod
     def _extract_cfn_gateway_v2_stage(
@@ -392,7 +389,7 @@ class CfnApiProvider(CfnBaseApiProvider):
         api_resource_type = resources.get(api_id, {}).get("Type")
         if api_resource_type != AWS_APIGATEWAY_V2_API:
             raise InvalidSamTemplateException(
-                "The AWS::ApiGatewayV2::Stag must have a valid ApiId that points to Api resource {}".format(api_id)
+                f"The AWS::ApiGatewayV2::Stag must have a valid ApiId that points to Api resource {api_id}"
             )
 
         collector.stage_name = stage_name

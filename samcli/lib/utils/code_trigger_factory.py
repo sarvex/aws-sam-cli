@@ -46,7 +46,7 @@ class CodeTriggerFactory(ResourceTypeBasedFactory[CodeResourceTrigger]):  # pyli
         resource: Dict[str, Any],
         on_code_change: Callable,
     ):
-        package_type = resource.get("Properties", dict()).get("PackageType", ZIP)
+        package_type = resource.get("Properties", {}).get("PackageType", ZIP)
         if package_type == ZIP:
             return LambdaZipCodeTrigger(resource_identifier, self._stacks, self.base_dir, on_code_change)
         if package_type == IMAGE:

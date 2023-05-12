@@ -26,7 +26,8 @@ def manage_stack(profile, region):
     bucket_name = outputs.get("SourceBucket")
     if bucket_name is None:
         msg = (
-            "Stack " + SAM_CLI_STACK_NAME + " exists, but is missing the managed source bucket key. "
+            f"Stack {SAM_CLI_STACK_NAME}"
+            + " exists, but is missing the managed source bucket key. "
             "Failing as this stack was likely not created by the AWS SAM CLI."
         )
         raise UserException(msg)

@@ -66,8 +66,7 @@ class GenericApiSyncFlow(SyncFlow):
         if self._definition_uri is None:
             return None
         with open(self._definition_uri, "rb") as swagger_file:
-            swagger_body = swagger_file.read()
-            return swagger_body
+            return swagger_file.read()
 
     def _get_definition_file(self, api_identifier: str) -> Optional[str]:
         api_resource = get_resource_by_id(self._stacks, ResourceIdentifier(api_identifier))

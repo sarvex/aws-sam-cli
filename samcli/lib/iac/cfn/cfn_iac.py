@@ -142,9 +142,9 @@ class CfnIacImplementation(IaCPluginInterface):
             if not isinstance(metadata, DictSectionItem):
                 continue
             metadata_type = metadata.item_id
-            metadata_body = metadata.body
             metadata_assets: List[Asset] = []
             if metadata_type in METADATA_WITH_LOCAL_PATHS:
+                metadata_body = metadata.body
                 for path_prop_name in METADATA_WITH_LOCAL_PATHS[metadata_type]:
                     asset_path = jmespath.search(path_prop_name, metadata_body)
                     asset = S3Asset(source_path=asset_path, source_property=path_prop_name)

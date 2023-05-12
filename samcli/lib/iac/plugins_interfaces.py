@@ -376,10 +376,14 @@ class DictSectionItem(SectionItem, MutableMapping):
     def find_asset_by_source_property(self, source_property: str) -> Optional[Asset]:
         if not self.assets:
             return None
-        for asset in self.assets:
-            if asset.source_property == source_property:
-                return asset
-        return None
+        return next(
+            (
+                asset
+                for asset in self.assets
+                if asset.source_property == source_property
+            ),
+            None,
+        )
 
     def __setitem__(self, k: str, v: Any) -> None:
         self._body[k] = v
@@ -462,9 +466,7 @@ class DictSection(Section, MutableMapping):
 
     def __getitem__(self, k: str) -> Any:
         v = self._items_dict[k]
-        if isinstance(v, SimpleSectionItem):
-            return v.value
-        return v
+        return v.value if isinstance(v, SimpleSectionItem) else v
 
     def __len__(self) -> int:
         return len(self._items_dict)
@@ -667,9 +669,7 @@ class Stack(MutableMapping):
 
     def __getitem__(self, k: str) -> Any:
         v = self._sections[k]
-        if isinstance(v, SimpleSection):
-            return v.value
-        return v
+        return v.value if isinstance(v, SimpleSection) else v
 
     def __len__(self) -> int:
         return len(self._sections)
@@ -703,9 +703,7 @@ class SamCliProject:
 
     @property
     def default_stack(self) -> Optional[Stack]:
-        if len(self._stacks) > 0:
-            return self._stacks[0]
-        return None
+        return self._stacks[0] if len(self._stacks) > 0 else None
 
     @property
     def extra_details(self) -> Optional[Dict[str, Any]]:
@@ -716,10 +714,7 @@ class SamCliProject:
         self._extra_details = extra_details
 
     def find_stack_by_name(self, name: str) -> Optional["Stack"]:
-        for stack in self.stacks:
-            if stack.name == name:
-                return stack
-        return None
+        return next((stack for stack in self.stacks if stack.name == name), None)
 
 
 class LookupPathType(Enum):
@@ -844,7 +839,4 @@ class IaCPluginInterface(metaclass=abc.ABCMeta):
 def _make_dict(obj: Union[MutableMapping, Mapping]) -> Union[MutableMapping, Mapping]:
     if not isinstance(obj, MutableMapping):
         return obj
-    to_return = dict()
-    for key, val in obj.items():
-        to_return[key] = _make_dict(val)
-    return to_return
+    return {key: _make_dict(val) for key, val in obj.items()}

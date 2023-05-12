@@ -38,7 +38,7 @@ class CfnUtils:
             # using delete_stack but get_template does not return
             # the template_str for this stack restricting deletion of
             # artifacts.
-            return bool(stack["StackStatus"] != "REVIEW_IN_PROGRESS")
+            return stack["StackStatus"] != "REVIEW_IN_PROGRESS"
 
         except ClientError as e:
             # If a stack does not exist, describe_stacks will throw an
@@ -67,10 +67,7 @@ class CfnUtils:
         """
         try:
             resp = self._client.get_template(StackName=stack_name, TemplateStage=stage)
-            if not resp["TemplateBody"]:
-                return {}
-            return dict(resp)
-
+            return {} if not resp["TemplateBody"] else dict(resp)
         except (ClientError, BotoCoreError) as e:
             # If there are credentials, environment errors,
             # catch that and throw a delete failed error.

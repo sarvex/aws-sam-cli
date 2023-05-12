@@ -49,7 +49,7 @@ class ContextIdentity:
 
         :return: dict representing the object
         """
-        json_dict = {
+        return {
             "apiKey": self.api_key,
             "userArn": self.user_arn,
             "cognitoAuthenticationType": self.cognito_authentication_type,
@@ -61,8 +61,6 @@ class ContextIdentity:
             "sourceIp": self.source_ip,
             "accountId": self.account_id,
         }
-
-        return json_dict
 
 
 class RequestContext:
@@ -126,10 +124,7 @@ class RequestContext:
 
         :return: dict representing the object
         """
-        identity_dict = {}
-        if self.identity:
-            identity_dict = self.identity.to_dict()
-
+        identity_dict = self.identity.to_dict() if self.identity else {}
         json_dict = {
             "resourceId": self.resource_id,
             "apiId": self.api_id,
@@ -228,25 +223,33 @@ class ApiGatewayLambdaEvent:
         if self.request_context:
             request_context_dict = self.request_context.to_dict()
 
-        json_dict = {
+        return {
             "version": self.version,
             "httpMethod": self.http_method,
             "body": self.body if self.body else None,
             "resource": self.resource,
             "requestContext": request_context_dict,
-            "queryStringParameters": dict(self.query_string_params) if self.query_string_params else None,
-            "multiValueQueryStringParameters": dict(self.multi_value_query_string_params)
+            "queryStringParameters": dict(self.query_string_params)
+            if self.query_string_params
+            else None,
+            "multiValueQueryStringParameters": dict(
+                self.multi_value_query_string_params
+            )
             if self.multi_value_query_string_params
             else None,
             "headers": dict(self.headers) if self.headers else None,
-            "multiValueHeaders": dict(self.multi_value_headers) if self.multi_value_headers else None,
-            "pathParameters": dict(self.path_parameters) if self.path_parameters else None,
-            "stageVariables": dict(self.stage_variables) if self.stage_variables else None,
+            "multiValueHeaders": dict(self.multi_value_headers)
+            if self.multi_value_headers
+            else None,
+            "pathParameters": dict(self.path_parameters)
+            if self.path_parameters
+            else None,
+            "stageVariables": dict(self.stage_variables)
+            if self.stage_variables
+            else None,
             "path": self.path,
             "isBase64Encoded": self.is_base_64_encoded,
         }
-
-        return json_dict
 
 
 class ContextHTTP:
@@ -275,15 +278,13 @@ class ContextHTTP:
 
         :return: dict representing the object
         """
-        json_dict = {
+        return {
             "method": self.method,
             "path": self.path,
             "protocol": self.protocol,
             "sourceIp": self.source_ip,
             "userAgent": self.user_agent,
         }
-
-        return json_dict
 
 
 class RequestContextV2:
@@ -333,16 +334,13 @@ class RequestContextV2:
 
         :return: dict representing the object
         """
-        http_dict = {}
-        if self.http:
-            http_dict = self.http.to_dict()
-
+        http_dict = self.http.to_dict() if self.http else {}
         # this could get explicitly passed in as None further up the
         # chain so coalescing to $default here to ensure it's never empty
         if self.stage is None:
             self.stage = "$default"
 
-        json_dict = {
+        return {
             "accountId": self.account_id,
             "apiId": self.api_id,
             "http": http_dict,
@@ -354,8 +352,6 @@ class RequestContextV2:
             "domainName": "localhost",
             "domainPrefix": "localhost",
         }
-
-        return json_dict
 
 
 class ApiGatewayV2LambdaEvent:

@@ -49,7 +49,7 @@ class RestApiSyncFlow(GenericApiSyncFlow):
             build_context,
             deploy_context,
             physical_id_mapping,
-            log_name="RestApi " + api_identifier,
+            log_name=f"RestApi {api_identifier}",
             stacks=stacks,
         )
         self._api_physical_id = ""
@@ -112,19 +112,18 @@ class RestApiSyncFlow(GenericApiSyncFlow):
 
         stages = set()
         # If it is a SAM resource, get the StageName property
-        if api_resource:
-            if api_resource.get("Type") == AWS_SERVERLESS_API:
-                # The customer defined stage name
-                stage_name = api_resource.get("Properties", {}).get("StageName")
-                if stage_name:
-                    stages.add(cast(str, stage_name))
+        if api_resource and api_resource.get("Type") == AWS_SERVERLESS_API:
+            # The customer defined stage name
+            stage_name = api_resource.get("Properties", {}).get("StageName")
+            if stage_name:
+                stages.add(cast(str, stage_name))
 
-                # The stage called "Stage"
-                if stage_name != "Stage":
-                    response_sta = cast(Dict, self._api_client.get_stages(restApiId=self._api_physical_id))
-                    for item in response_sta.get("item"):  # type: ignore
-                        if item.get("stageName") == "Stage":
-                            stages.add("Stage")
+            # The stage called "Stage"
+            if stage_name != "Stage":
+                response_sta = cast(Dict, self._api_client.get_stages(restApiId=self._api_physical_id))
+                for item in response_sta.get("item"):  # type: ignore
+                    if item.get("stageName") == "Stage":
+                        stages.add("Stage")
 
         # For both SAM and ApiGateway resource, check if any refs from stage resources
         for stage_resource in stage_resources:
@@ -163,8 +162,7 @@ class RestApiSyncFlow(GenericApiSyncFlow):
         for stage in stages:
             # Collects previous deployment IDs to clean up
             response_get = cast(Dict, self._api_client.get_stage(restApiId=self._api_physical_id, stageName=stage))
-            prev_dep_id = response_get.get("deploymentId")
-            if prev_dep_id:
+            if prev_dep_id := response_get.get("deploymentId"):
                 prev_dep_ids.add(cast(str, prev_dep_id))
 
             # Updates the stage with newest deployment

@@ -139,10 +139,14 @@ class SyncFlow(ABC):
         List[str]
             List of keys for all resources and their API calls
         """
-        lock_keys = list()
+        lock_keys = []
         for resource_api_calls in self._get_resource_api_calls():
-            for api_call in resource_api_calls.api_calls:
-                lock_keys.append(SyncFlow._get_lock_key(resource_api_calls.resource_identifier, api_call))
+            lock_keys.extend(
+                SyncFlow._get_lock_key(
+                    resource_api_calls.resource_identifier, api_call
+                )
+                for api_call in resource_api_calls.api_calls
+            )
         return lock_keys
 
     def set_locks_with_distributor(self, distributor: LockDistributor):
@@ -181,7 +185,7 @@ class SyncFlow(ABC):
         str
             String key created with logical ID and API call name.
         """
-        return logical_id + "_" + api_call
+        return f"{logical_id}_{api_call}"
 
     def _get_lock_chain(self) -> LockChain:
         """Return a LockChain object for all the locks
@@ -229,11 +233,10 @@ class SyncFlow(ABC):
             Resource does not exist in the physical ID mapping.
             This could mean remote and local templates are not in sync.
         """
-        physical_id = self._physical_id_mapping.get(resource_identifier)
-        if not physical_id:
+        if physical_id := self._physical_id_mapping.get(resource_identifier):
+            return physical_id
+        else:
             raise MissingPhysicalResourceError(resource_identifier)
-
-        return physical_id
 
     @abstractmethod
     def _equality_keys(self) -> Any:
@@ -284,7 +287,7 @@ class SyncFlow(ABC):
         List[SyncFlow]
             A list of dependent sync flows
         """
-        dependencies: List["SyncFlow"] = list()
+        dependencies: List["SyncFlow"] = []
         LOG.debug("%sSetting Up", self.log_prefix)
         self.set_up()
         LOG.debug("%sGathering Resources", self.log_prefix)

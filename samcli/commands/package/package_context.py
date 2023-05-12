@@ -106,8 +106,9 @@ class PackageContext:
         self.image_repositories = self.image_repositories if self.image_repositories is not None else {}
         updated_repo = {}
         for image_repo_func_id, image_repo_uri in self.image_repositories.items():
-            repo_full_path = get_resource_full_path_by_id(stacks, ResourceIdentifier(image_repo_func_id))
-            if repo_full_path:
+            if repo_full_path := get_resource_full_path_by_id(
+                stacks, ResourceIdentifier(image_repo_func_id)
+            ):
                 updated_repo[repo_full_path] = image_repo_uri
         self.image_repositories = updated_repo
         region_name = self.region if self.region else None
@@ -159,12 +160,11 @@ class PackageContext:
         )
         exported_template = template.export()
 
-        if use_json:
-            exported_str = json.dumps(exported_template, indent=4, ensure_ascii=False)
-        else:
-            exported_str = yaml_dump(exported_template)
-
-        return exported_str
+        return (
+            json.dumps(exported_template, indent=4, ensure_ascii=False)
+            if use_json
+            else yaml_dump(exported_template)
+        )
 
     @staticmethod
     def write_output(output_file_name: Optional[str], data: str) -> None:

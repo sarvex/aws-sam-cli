@@ -50,7 +50,7 @@ class LogGroupProvider:
         str
             Default Log Group name used by this function
         """
-        return "/aws/lambda/{}".format(function_name)
+        return f"/aws/lambda/{function_name}"
 
     @staticmethod
     @force_experimental(config_entry=ExperimentalFlag.Accelerate)  # pylint: disable=E1120
@@ -73,7 +73,7 @@ class LogGroupProvider:
 
         # TODO: A rest api may have multiple stage, here just log out the prod stage and can be extended to log out
         #  all stages or a specific stage if needed.
-        return "API-Gateway-Execution-Logs_{}/{}".format(rest_api_id, stage)
+        return f"API-Gateway-Execution-Logs_{rest_api_id}/{stage}"
 
     @staticmethod
     @force_experimental(config_entry=ExperimentalFlag.Accelerate)  # pylint: disable=E1120
@@ -106,8 +106,7 @@ class LogGroupProvider:
         if not log_setting:
             LOG.warning("Access logging is disabled for HTTP API ID (%s)", http_api_id)
             return None
-        log_group_name = str(log_setting.get("DestinationArn").split(":")[-1])
-        return log_group_name
+        return str(log_setting.get("DestinationArn").split(":")[-1])
 
     @staticmethod
     @force_experimental(config_entry=ExperimentalFlag.Accelerate)  # pylint: disable=E1120

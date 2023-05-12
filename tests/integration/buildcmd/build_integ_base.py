@@ -53,11 +53,7 @@ class BuildIntegBase(TestCase):
 
     @classmethod
     def base_command(cls):
-        command = "sam"
-        if os.getenv("SAM_CLI_DEV"):
-            command = "samdev"
-
-        return command
+        return "samdev" if os.getenv("SAM_CLI_DEV") else "sam"
 
     def get_command_list(
         self,
@@ -159,7 +155,12 @@ class BuildIntegBase(TestCase):
         self.fail(f"{image_tag} was not pulled")
 
     def _make_parameter_override_arg(self, overrides):
-        return " ".join(["ParameterKey={},ParameterValue={}".format(key, value) for key, value in overrides.items()])
+        return " ".join(
+            [
+                f"ParameterKey={key},ParameterValue={value}"
+                for key, value in overrides.items()
+            ]
+        )
 
     def _verify_image_build_artifact(self, template_path, image_function_logical_id, property, image_uri):
         self.assertTrue(template_path.exists(), "Build directory should be created")
@@ -179,7 +180,7 @@ class BuildIntegBase(TestCase):
             )
 
     def _verify_invoke_built_function(self, template_path, function_logical_id, overrides, expected_result):
-        LOG.info("Invoking built function '{}'".format(function_logical_id))
+        LOG.info(f"Invoking built function '{function_logical_id}'")
 
         cmdlist = [
             self.cmd,
@@ -197,7 +198,7 @@ class BuildIntegBase(TestCase):
                 overrides,
             ]
 
-        LOG.info("Running invoke Command: {}".format(cmdlist))
+        LOG.info(f"Running invoke Command: {cmdlist}")
 
         process_execute = run_command(cmdlist)
         process_execute.process.wait()
@@ -292,7 +293,9 @@ class BuildIntegRubyBase(BuildIntegBase):
 
         gem_path = ruby_bundled_path.joinpath(ruby_version[0], "gems")
 
-        self.assertTrue(any([True if self.EXPECTED_RUBY_GEM in gem else False for gem in os.listdir(str(gem_path))]))
+        self.assertTrue(
+            any(self.EXPECTED_RUBY_GEM in gem for gem in os.listdir(str(gem_path)))
+        )
 
 
 class BuildIntegEsbuildBase(BuildIntegBase):
@@ -306,7 +309,7 @@ class BuildIntegEsbuildBase(BuildIntegBase):
 
         cmdlist.append("--beta-features")
 
-        LOG.info("Running Command: {}".format(cmdlist))
+        LOG.info(f"Running Command: {cmdlist}")
         run_command(cmdlist, cwd=self.working_dir)
 
         self._verify_built_artifact(
@@ -354,7 +357,7 @@ class BuildIntegNodeBase(BuildIntegBase):
         overrides = self.get_override(runtime, "Node", architecture, "ignored")
         cmdlist = self.get_command_list(use_container=use_container, parameter_overrides=overrides)
 
-        LOG.info("Running Command: {}".format(cmdlist))
+        LOG.info(f"Running Command: {cmdlist}")
         run_command(cmdlist, cwd=self.working_dir)
 
         self._verify_built_artifact(
@@ -369,7 +372,9 @@ class BuildIntegNodeBase(BuildIntegBase):
             "OtherRelativePathResource",
             "BodyS3Location",
             os.path.relpath(
-                os.path.normpath(os.path.join(str(str(relative_path)), "SomeRelativePath")),
+                os.path.normpath(
+                    os.path.join(str(relative_path), "SomeRelativePath")
+                ),
                 str(self.default_build_dir),
             ),
         )
@@ -379,7 +384,9 @@ class BuildIntegNodeBase(BuildIntegBase):
             "GlueResource",
             "Command.ScriptLocation",
             os.path.relpath(
-                os.path.normpath(os.path.join(str(str(relative_path)), "SomeRelativePath")),
+                os.path.normpath(
+                    os.path.join(str(relative_path), "SomeRelativePath")
+                ),
                 str(self.default_build_dir),
             ),
         )
@@ -420,8 +427,8 @@ class BuildIntegGoBase(BuildIntegBase):
 
         # Need to pass GOPATH ENV variable to match the test directory when running build
 
-        LOG.info("Running Command: {}".format(cmdlist))
-        LOG.info("Running with SAM_BUILD_MODE={}".format(mode))
+        LOG.info(f"Running Command: {cmdlist}")
+        LOG.info(f"Running with SAM_BUILD_MODE={mode}")
 
         newenv = os.environ.copy()
         if mode:
@@ -446,8 +453,8 @@ class BuildIntegGoBase(BuildIntegBase):
             ),
         )
 
-        expected = "{'message': 'Hello World'}"
         if not SKIP_DOCKER_TESTS and architecture == X86_64:
+            expected = "{'message': 'Hello World'}"
             # ARM64 is not supported yet for invoking
             self._verify_invoke_built_function(
                 self.built_template, self.FUNCTION_LOGICAL_ID, self._make_parameter_override_arg(overrides), expected
@@ -498,7 +505,7 @@ class BuildIntegJavaBase(BuildIntegBase):
         if code_path == self.USING_GRADLEW_PATH and use_container and IS_WINDOWS:
             osutils.convert_to_unix_line_ending(os.path.join(self.test_data_path, self.USING_GRADLEW_PATH, "gradlew"))
 
-        LOG.info("Running Command: {}".format(cmdlist))
+        LOG.info(f"Running Command: {cmdlist}")
         run_command(cmdlist, cwd=self.working_dir)
 
         self._verify_built_artifact(
@@ -527,8 +534,8 @@ class BuildIntegJavaBase(BuildIntegBase):
 
         # If we are testing in the container, invoke the function as well. Otherwise we cannot guarantee docker is on appveyor
         if use_container:
-            expected = "Hello World"
             if not SKIP_DOCKER_TESTS:
+                expected = "Hello World"
                 self._verify_invoke_built_function(
                     self.built_template,
                     self.FUNCTION_LOGICAL_ID,
@@ -588,7 +595,7 @@ class BuildIntegPythonBase(BuildIntegBase):
         overrides = self.get_override(runtime, codeuri, architecture, "main.handler") if do_override else None
         cmdlist = self.get_command_list(use_container=use_container, parameter_overrides=overrides)
 
-        LOG.info("Running Command: {}".format(cmdlist))
+        LOG.info(f"Running Command: {cmdlist}")
         run_command(cmdlist, cwd=self.working_dir)
 
         self._verify_built_artifact(
@@ -653,7 +660,7 @@ class BuildIntegPythonBase(BuildIntegBase):
         self.assertEqual(actual_files, expected_files)
 
     def _get_python_version(self):
-        return "python{}.{}".format(sys.version_info.major, sys.version_info.minor)
+        return f"python{sys.version_info.major}.{sys.version_info.minor}"
 
 
 class BuildIntegProvidedBase(BuildIntegBase):
@@ -674,7 +681,7 @@ class BuildIntegProvidedBase(BuildIntegBase):
             use_container=use_container, parameter_overrides=overrides, manifest_path=manifest_path
         )
 
-        LOG.info("Running Command: {}".format(cmdlist))
+        LOG.info(f"Running Command: {cmdlist}")
         # Built using Makefile for a python project.
         run_command(cmdlist, cwd=self.working_dir)
 
@@ -687,10 +694,10 @@ class BuildIntegProvidedBase(BuildIntegBase):
                 self.default_build_dir, self.FUNCTION_LOGICAL_ID, self.EXPECTED_FILES_PROJECT_MANIFEST
             )
 
-        expected = "2.23.0"
         # Building was done with a makefile, but invoke should be checked with corresponding python image.
         overrides["Runtime"] = self._get_python_version()
         if not SKIP_DOCKER_TESTS:
+            expected = "2.23.0"
             self._verify_invoke_built_function(
                 self.built_template, self.FUNCTION_LOGICAL_ID, self._make_parameter_override_arg(overrides), expected
             )
@@ -740,7 +747,7 @@ class BuildIntegProvidedBase(BuildIntegBase):
         self.assertEqual(actual_files, expected_files)
 
     def _get_python_version(self):
-        return "python{}.{}".format(sys.version_info.major, sys.version_info.minor)
+        return f"python{sys.version_info.major}.{sys.version_info.minor}"
 
 
 class DedupBuildIntegBase(BuildIntegBase):
@@ -860,7 +867,7 @@ class IntrinsicIntegBase(BuildIntegBase):
         Invoke the function, if error_message is not None, the invoke should fail.
         """
         for function_logical_id in functions:
-            LOG.info("Invoking built function '{}'".format(function_logical_id))
+            LOG.info(f"Invoking built function '{function_logical_id}'")
 
             cmdlist = [
                 self.cmd,

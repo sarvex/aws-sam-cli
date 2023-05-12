@@ -54,13 +54,14 @@ class StartApiIntegBaseClass(TestCase):
 
     @classmethod
     def build(cls):
-        command = "sam"
-        if os.getenv("SAM_CLI_DEV"):
-            command = "samdev"
+        command = "samdev" if os.getenv("SAM_CLI_DEV") else "sam"
         command_list = [command, "build"]
         if cls.build_overrides:
             overrides_arg = " ".join(
-                ["ParameterKey={},ParameterValue={}".format(key, value) for key, value in cls.build_overrides.items()]
+                [
+                    f"ParameterKey={key},ParameterValue={value}"
+                    for key, value in cls.build_overrides.items()
+                ]
             )
             command_list += ["--parameter-overrides", overrides_arg]
         working_dir = str(Path(cls.template).resolve().parents[0])
@@ -101,8 +102,13 @@ class StartApiIntegBaseClass(TestCase):
         cls.read_threading.start()
 
     @classmethod
-    def _make_parameter_override_arg(self, overrides):
-        return " ".join(["ParameterKey={},ParameterValue={}".format(key, value) for key, value in overrides.items()])
+    def _make_parameter_override_arg(cls, overrides):
+        return " ".join(
+            [
+                f"ParameterKey={key},ParameterValue={value}"
+                for key, value in overrides.items()
+            ]
+        )
 
     @classmethod
     def tearDownClass(cls):

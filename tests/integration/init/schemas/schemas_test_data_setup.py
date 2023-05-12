@@ -113,7 +113,7 @@ eb-app-maven
             config_file_content = "[profile {0}]\noutput = json\nregion = {1}".format(profile, region)
 
         custom_config = os.path.join(self.config_dir, "customconfig")
-        print("Writing custom config to {}".format(custom_config))
+        print(f"Writing custom config to {custom_config}")
         with open(custom_config, "w") as file:
             file.write(config_file_content)
         return custom_config
@@ -123,7 +123,7 @@ eb-app-maven
         if profile != DEFAULT:
             cred_file_content += f"\n{self._create_cred_profile(profile, access_key, secret_key, session_token)}"
         custom_cred = os.path.join(self.config_dir, "customcred")
-        print("Writing custom creds to {}".format(custom_cred))
+        print(f"Writing custom creds to {custom_cred}")
         with open(custom_cred, "w") as file:
             file.write(cred_file_content)
         return custom_cred
@@ -179,7 +179,7 @@ def _create_3p_schemas(registry_name, schemas_client, no_of_schemas):
         '"department","ticketId"],"properties":{"creator":{"type":"string"},"department":{"type":"string"},"ticketId":{"type":"string"}}}}}} '
     )
     for i in range(0, no_of_schemas):
-        schema_name = "schema_test-%s" % i
+        schema_name = f"schema_test-{i}"
         _create_schema_if_not_exist(registry_name, schema_name, content, "1", "test-schema", "OpenApi3", schemas_client)
 
 
@@ -189,7 +189,7 @@ def _create_2p_schemas(registry_name, schemas_client):
         '"required":["foo","bar","baz"],"properties":{"foo":{"type":"string"},"bar":{"type":"string"},"baz":{"type":"string"}}}}}} '
     )
     for i in range(0, 2):
-        schema_name = "schema_test-%s" % i
+        schema_name = f"schema_test-{i}"
         _create_schema_if_not_exist(registry_name, schema_name, content, "1", "test-schema", "OpenApi3", schemas_client)
 
 

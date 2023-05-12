@@ -488,8 +488,7 @@ class WarmLambdaRuntime(LambdaRuntime):
             )
             self._observer.unwatch(function_config)
             self._function_configs.pop(function_full_path, None)
-            container = self._containers.get(function_full_path, None)
-            if container:
+            if container := self._containers.get(function_full_path, None):
                 self._container_manager.stop(container)
                 self._containers.pop(function_full_path, None)
 

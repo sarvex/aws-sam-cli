@@ -96,23 +96,23 @@ class CfnParameterOverridesType(click.ParamType):
         for val in value:
             val.strip()
             # Add empty string to start of the string to help match `_pattern2`
-            val = " " + val
+            val = f" {val}"
 
             try:
                 # NOTE(TheSriram): find the first regex that matched.
                 # pylint is concerned that we are checking at the same `val` within the loop,
                 # but that is the point, so disabling it.
                 pattern = next(
-                    i
-                    for i in filter(
-                        lambda item: re.findall(item, val), self.ordered_pattern_match
-                    )  # pylint: disable=cell-var-from-loop
+                    iter(
+                        filter(
+                            lambda item: re.findall(item, val),
+                            self.ordered_pattern_match,
+                        )
+                    )
                 )
             except StopIteration:
                 return self.fail(
-                    "{} is not in valid format. It must look something like '{}' or '{}'".format(
-                        val, self.__EXAMPLE_1, self.__EXAMPLE_2
-                    ),
+                    f"{val} is not in valid format. It must look something like '{self.__EXAMPLE_1}' or '{self.__EXAMPLE_2}'",
                     param,
                     ctx,
                 )
@@ -168,7 +168,9 @@ class CfnMetadataType(click.ParamType):
 
         if fail:
             return self.fail(
-                "{} is not in valid format. It must look something like '{}'".format(value, self._EXAMPLE), param, ctx
+                f"{value} is not in valid format. It must look something like '{self._EXAMPLE}'",
+                param,
+                ctx,
             )
 
         return result
@@ -225,7 +227,7 @@ class CfnTags(click.ParamType):
 
             if fail:
                 return self.fail(
-                    "{} is not in valid format. It must look something like '{}'".format(value, self._EXAMPLE),
+                    f"{value} is not in valid format. It must look something like '{self._EXAMPLE}'",
                     param,
                     ctx,
                 )
@@ -304,7 +306,7 @@ class SigningProfilesOptionType(click.ParamType):
         for val in value:
             val.strip()
             # Add empty string to start of the string to help match `_pattern2`
-            val = " " + val
+            val = f" {val}"
 
             signing_profiles = re.findall(self.pattern, val)
 
@@ -380,10 +382,10 @@ class ImageRepositoryType(click.ParamType):
         """
         Attempt a conversion given the stipulations of allowed transformations.
         """
-        result = self.transformer.transform(value, param, ctx)
-        if not result:
+        if result := self.transformer.transform(value, param, ctx):
+            return value
+        else:
             raise click.BadParameter(f"Invalid Image Repository ECR URI: {value}")
-        return value
 
 
 class ImageRepositoriesType(click.ParamType):

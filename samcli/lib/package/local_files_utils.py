@@ -61,6 +61,6 @@ def get_uploaded_s3_object_name(
         raise Exception("Either File Content, File Path, or Precomputed Hash should has a value")
 
     if extension:
-        filemd5 = filemd5 + "." + extension
+        filemd5 = f"{filemd5}.{extension}"
 
     return filemd5

@@ -166,7 +166,6 @@ class ECRUploader:
 
     @staticmethod
     def parse_image_url(image_uri: str) -> Dict:
-        result = {}
         registry_repo_tag = image_uri.split("/", 1)
         repo_colon_image_tag = None
         if len(registry_repo_tag) == 1:
@@ -177,8 +176,9 @@ class ECRUploader:
             repo_colon_image_tag = registry_repo_tag[1]
         repo_image_tag_split = repo_colon_image_tag.split(":")
 
-        # If no tag is specified, use latest
-        result["repository"] = repo_image_tag_split[0]
-        result["image_tag"] = repo_image_tag_split[1] if len(repo_image_tag_split) > 1 else "latest"
-
-        return result
+        return {
+            "repository": repo_image_tag_split[0],
+            "image_tag": repo_image_tag_split[1]
+            if len(repo_image_tag_split) > 1
+            else "latest",
+        }

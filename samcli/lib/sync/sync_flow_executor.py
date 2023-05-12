@@ -83,10 +83,11 @@ def default_exception_handler(sync_flow_exception: SyncFlowException) -> None:
         )
     elif (
         isinstance(exception, ClientError)
-        and exception.response.get("Error", dict()).get("Code", "") == "ResourceNotFoundException"
+        and exception.response.get("Error", {}).get("Code", "")
+        == "ResourceNotFoundException"
     ):
         LOG.error("Cannot find resource in remote.%s", HELP_TEXT_FOR_SYNC_INFRA)
-        LOG.error(exception.response.get("Error", dict()).get("Message", ""))
+        LOG.error(exception.response.get("Error", {}).get("Message", ""))
     elif isinstance(exception, NoLayerVersionsFoundError):
         LOG.error("Cannot find any versions for layer %s.%s", exception.layer_name_arn, HELP_TEXT_FOR_SYNC_INFRA)
     elif isinstance(exception, MissingFunctionBuildDefinition):
@@ -221,17 +222,15 @@ class SyncFlowExecutor:
         with self._flow_queue_lock:
             # Putting nonsubmitted tasks into this deferred tasks list
             # to avoid modifying the queue while emptying it
-            deferred_tasks = list()
+            deferred_tasks = []
 
             # Go through all queued tasks and try to execute them
             while not self._flow_queue.empty():
                 sync_flow_task: SyncFlowTask = self._flow_queue.get()
 
-                sync_flow_future = self._submit_sync_flow_task(executor, sync_flow_task)
-
-                # sync_flow_future can be None if the task cannot be submitted currently
-                # Put it into deferred_tasks and add all of them at the end to avoid endless loop
-                if sync_flow_future:
+                if sync_flow_future := self._submit_sync_flow_task(
+                    executor, sync_flow_task
+                ):
                     self._running_futures.add(sync_flow_future)
                     LOG.info(self._color.cyan(f"Syncing {sync_flow_future.sync_flow.log_name}..."))
                 else:
@@ -271,11 +270,12 @@ class SyncFlowExecutor:
         if sync_flow in [future.sync_flow for future in self._running_futures]:
             return None
 
-        sync_flow_future = SyncFlowFuture(
-            sync_flow=sync_flow, future=executor.submit(SyncFlowExecutor._sync_flow_execute_wrapper, sync_flow)
+        return SyncFlowFuture(
+            sync_flow=sync_flow,
+            future=executor.submit(
+                SyncFlowExecutor._sync_flow_execute_wrapper, sync_flow
+            ),
         )
-
-        return sync_flow_future
 
     def _handle_result(
         self, sync_flow_future: SyncFlowFuture, exception_handler: Optional[Callable[[SyncFlowException], None]]
@@ -334,7 +334,10 @@ class SyncFlowExecutor:
         try:
             dependent_sync_flows = sync_flow.execute()
         except ClientError as e:
-            if e.response.get("Error", dict()).get("Code", "") == "ResourceNotFoundException":
+            if (
+                e.response.get("Error", {}).get("Code", "")
+                == "ResourceNotFoundException"
+            ):
                 raise SyncFlowException(sync_flow, MissingPhysicalResourceError()) from e
             raise SyncFlowException(sync_flow, e) from e
         except Exception as e:

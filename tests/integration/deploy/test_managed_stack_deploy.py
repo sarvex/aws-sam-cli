@@ -98,7 +98,7 @@ class TestManagedStackDeploy(PackageIntegBase, DeployIntegBase):
         )
 
         deploy_process_execute = run_command_with_input(
-            deploy_command_list, "{}\n\n\n\n\n\n\n\n\n".format(stack_name).encode()
+            deploy_command_list, f"{stack_name}\n\n\n\n\n\n\n\n\n".encode()
         )
 
         # Deploy should succeed with a managed stack

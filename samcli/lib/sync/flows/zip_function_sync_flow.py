@@ -94,7 +94,7 @@ class ZipFunctionSyncFlow(FunctionSyncFlow):
             self._build_graph = build_result.build_graph
             self._artifact_folder = build_result.artifacts.get(self._function_identifier)
 
-        zip_file_path = os.path.join(tempfile.gettempdir(), "data-" + uuid.uuid4().hex)
+        zip_file_path = os.path.join(tempfile.gettempdir(), f"data-{uuid.uuid4().hex}")
         self._zip_file = make_zip(zip_file_path, self._artifact_folder)
         LOG.debug("%sCreated artifact ZIP file: %s", self.log_prefix, self._zip_file)
         self._local_sha = file_checksum(cast(str, self._zip_file), hashlib.sha256())
@@ -143,10 +143,10 @@ class ZipFunctionSyncFlow(FunctionSyncFlow):
             os.remove(self._zip_file)
 
     def _get_resource_api_calls(self) -> List[ResourceAPICall]:
-        resource_calls = list()
-        for layer in self._function.layers:
-            resource_calls.append(ResourceAPICall(layer.full_path, ["Build"]))
-        return resource_calls
+        return [
+            ResourceAPICall(layer.full_path, ["Build"])
+            for layer in self._function.layers
+        ]
 
     @staticmethod
     def _combine_dependencies() -> bool:

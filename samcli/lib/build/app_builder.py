@@ -236,7 +236,7 @@ class ApplicationBuilder:
                     file_env_vars = json.load(fp)
             except Exception as ex:
                 raise IOError(
-                    "Could not read environment variables overrides from file {}: {}".format(env_vars_file, str(ex))
+                    f"Could not read environment variables overrides from file {env_vars_file}: {str(ex)}"
                 ) from ex
 
         for function in functions:
@@ -308,9 +308,9 @@ class ApplicationBuilder:
                 # So skip it because there is no path/uri to update
                 continue
 
-            # clone normalized metadata from stack.resources only to built resources
-            normalized_metadata = normalized_resources.get(logical_id, {}).get("Metadata")
-            if normalized_metadata:
+            if normalized_metadata := normalized_resources.get(logical_id, {}).get(
+                "Metadata"
+            ):
                 resource["Metadata"] = normalized_metadata
 
             resource_type = resource.get("Type")
@@ -814,7 +814,8 @@ class ApplicationBuilder:
             except docker.errors.APIError as ex:
                 if "executable file not found in $PATH" in str(ex):
                     raise UnsupportedBuilderLibraryVersionError(
-                        container.image, "{} executable not found in container".format(container.executable_name)
+                        container.image,
+                        f"{container.executable_name} executable not found in container",
                     ) from ex
 
             # Container's output provides status of whether the build succeeded or failed
@@ -921,13 +922,13 @@ class ApplicationBuilder:
         # validate and raise OverridesNotWellDefinedError
         for env_var in list((file_env_vars or {}).values()) + list((inline_env_vars or {}).values()):
             if not isinstance(env_var, dict):
-                reason = "Environment variables {} in incorrect format".format(env_var)
+                reason = f"Environment variables {env_var} in incorrect format"
                 LOG.debug(reason)
                 raise OverridesNotWellDefinedError(reason)
 
         if file_env_vars:
             parameter_result = file_env_vars.get("Parameters", {})
-            result.update(parameter_result)
+            result |= parameter_result
 
         if inline_env_vars:
             inline_parameter_result = inline_env_vars.get("Parameters", {})

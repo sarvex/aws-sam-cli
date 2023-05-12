@@ -188,7 +188,9 @@ class S3Uploader:
         if self.prefix:
             # Note: list_objects_v2 api uses prefix to fetch the keys that begin with the prefix
             # To restrict fetching files with exact prefix self.prefix, "/" is used below.
-            response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.prefix + "/")
+            response = self.s3.list_objects_v2(
+                Bucket=self.bucket_name, Prefix=f"{self.prefix}/"
+            )
             prefix_files = response.get("Contents", [])
             for obj in prefix_files:
                 self.delete_artifact(obj["Key"], True)
@@ -278,10 +280,10 @@ class S3Uploader:
         parsed = urlparse(url)
         query = parse_qs(parsed.query)
         if parsed.netloc and parsed.path:
-            result = dict()
-            result[bucket_name_property] = parsed.netloc
-            result[object_key_property] = parsed.path.lstrip("/")
-
+            result = {
+                bucket_name_property: parsed.netloc,
+                object_key_property: parsed.path.lstrip("/"),
+            }
             # If there is a query string that has a single versionId field,
             # set the object version and return
             if version_property is not None and "versionId" in query and len(query["versionId"]) == 1:
@@ -302,15 +304,14 @@ class S3Uploader:
         e.g. https://s3.us-east-1.amazonaws.com/bucket/key
         """
         parsed = urlparse(url)
-        result = dict()
         # parsed.path would point to /bucket/key
         if parsed.path:
             s3_bucket_key = parsed.path.split("/", 2)[1:]
 
-            result[bucket_name_property] = s3_bucket_key[0]
-            result[object_key_property] = s3_bucket_key[1]
-
-            return result
+            return {
+                bucket_name_property: s3_bucket_key[0],
+                object_key_property: s3_bucket_key[1],
+            }
         raise ValueError("URL given to the parse method is not a valid S3 url {0}".format(url))
 
 

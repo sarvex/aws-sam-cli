@@ -59,10 +59,14 @@ class SamLayerProvider(SamBaseProvider):
         if not name:
             raise ValueError("Layer name is required")
 
-        for layer in self._layers:
-            if name in (layer.full_path, layer.layer_id, layer.name):
-                return layer
-        return None
+        return next(
+            (
+                layer
+                for layer in self._layers
+                if name in (layer.full_path, layer.layer_id, layer.name)
+            ),
+            None,
+        )
 
     def get_all(self) -> List[LayerVersion]:
         """

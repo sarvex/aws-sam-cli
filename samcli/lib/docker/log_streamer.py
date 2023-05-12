@@ -33,7 +33,7 @@ class LogStreamer:
         Stream progress from docker push logs and move the cursor based on the log id.
         :param logs: generator from docker_clent.APIClient.logs
         """
-        ids: Dict[str, int] = dict()
+        ids: Dict[str, int] = {}
         for log in logs:
             _id = log.get("id", "")
             status = log.get("status", "")

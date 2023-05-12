@@ -120,8 +120,7 @@ class SamConfig:
         cmd_name_key = self._to_key(cmd_names)
         env_content = self.document.get(env, {})
         cmd_content = env_content.get(cmd_name_key, {})
-        param_content = cmd_content.get(section, {})
-        if param_content:
+        if param_content := cmd_content.get(section, {}):
             param_content.update({key: value})
         elif cmd_content:
             cmd_content.update({section: {key: value}})

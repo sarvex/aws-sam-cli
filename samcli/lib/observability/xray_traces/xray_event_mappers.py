@@ -155,8 +155,7 @@ class XRayServiceGraphJSONMapper(ObservabilityEventMapper[XRayServiceGraphEvent]
         self.convert_event_datetime_to_iso(event, "EndTime")
 
     def convert_event_datetime_to_iso(self, event, datetime_key):
-        event_datetime = event.get(datetime_key, None)
-        if event_datetime:
+        if event_datetime := event.get(datetime_key, None):
             event[datetime_key] = self.convert_local_datetime_to_iso(event_datetime)
 
     @staticmethod

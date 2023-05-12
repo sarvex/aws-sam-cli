@@ -60,7 +60,10 @@ def do_cli(ctx, template):
     try:
         validator.is_valid()
     except InvalidSamDocumentException as e:
-        click.secho("Template provided at '{}' was invalid SAM Template.".format(template), bg="red")
+        click.secho(
+            f"Template provided at '{template}' was invalid SAM Template.",
+            bg="red",
+        )
         raise InvalidSamTemplateException(str(e)) from e
     except NoRegionFound as no_region_found_e:
         raise UserException(
@@ -72,7 +75,7 @@ def do_cli(ctx, template):
             "AWS Credentials are required. Please configure your credentials.", wrapped_from=e.__class__.__name__
         ) from e
 
-    click.secho("{} is a valid SAM Template".format(template), fg="green")
+    click.secho(f"{template} is a valid SAM Template", fg="green")
 
 
 def _read_sam_file(template):
@@ -89,7 +92,7 @@ def _read_sam_file(template):
 
     if not os.path.exists(template):
         click.secho("SAM Template Not Found", bg="red")
-        raise SamTemplateNotFoundException("Template at {} is not found".format(template))
+        raise SamTemplateNotFoundException(f"Template at {template} is not found")
 
     with click.open_file(template, "r", encoding="utf-8") as sam_template:
         sam_template = yaml_parse(sam_template.read())

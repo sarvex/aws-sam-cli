@@ -144,9 +144,9 @@ class EventTypeSubCommand(click.MultiCommand):
             default = self.subcmd_definition[cmd_name][self.TAGS][param_name]["default"]
             parameters.append(
                 click.Option(
-                    ["--{}".format(param_name)],
+                    [f"--{param_name}"],
                     default=default,
-                    help="Specify the {} name you'd like, otherwise the default = {}".format(param_name, default),
+                    help=f"Specify the {param_name} name you'd like, otherwise the default = {default}",
                 )
             )
 

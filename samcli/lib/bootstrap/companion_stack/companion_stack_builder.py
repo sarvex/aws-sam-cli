@@ -19,7 +19,7 @@ class CompanionStackBuilder(AbstractStackBuilder):
     def __init__(self, companion_stack: CompanionStack) -> None:
         super().__init__("AWS SAM CLI Managed ECR Repo Stack")
         self._companion_stack = companion_stack
-        self._repo_mapping: Dict[str, ECRRepo] = dict()
+        self._repo_mapping: Dict[str, ECRRepo] = {}
         self.add_metadata("CompanionStackname", self._companion_stack.stack_name)
 
     def add_function(self, function_logical_id: str) -> None:
@@ -32,7 +32,7 @@ class CompanionStackBuilder(AbstractStackBuilder):
         """
         Remove all functions that need ECR repos
         """
-        self._repo_mapping = dict()
+        self._repo_mapping = {}
 
     def build(self) -> str:
         """

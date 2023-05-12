@@ -114,7 +114,7 @@ def get_rapid_name(architecture: str) -> str:
     """
     validate_architecture(architecture)
 
-    return "aws-lambda-rie-" + architecture
+    return f"aws-lambda-rie-{architecture}"
 
 
 def get_image_arch(architecture: str) -> str:

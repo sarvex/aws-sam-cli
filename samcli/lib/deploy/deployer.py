@@ -410,7 +410,7 @@ class Deployer:
                     stack_change_in_progress = False
                     break
             except botocore.exceptions.ClientError as ex:
-                retry_attempts = retry_attempts + 1
+                retry_attempts += 1
                 if retry_attempts > self.max_attempts:
                     LOG.error("Describing stack events for %s failed: %s", stack_name, str(ex))
                     return
@@ -436,8 +436,7 @@ class Deployer:
             Preserves the state of previously provisioned resources when an operation fails
         """
         sys.stdout.write(
-            "\n{} - Waiting for stack create/update "
-            "to complete\n".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            f'\n{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - Waiting for stack create/update to complete\n'
         )
         sys.stdout.flush()
 
@@ -465,8 +464,7 @@ class Deployer:
 
             raise deploy_exceptions.DeployFailedError(stack_name=stack_name, msg=str(ex))
 
-        outputs = self.get_stack_outputs(stack_name=stack_name, echo=False)
-        if outputs:
+        if outputs := self.get_stack_outputs(stack_name=stack_name, echo=False):
             self._display_stack_outputs(outputs)
 
     def create_and_wait_for_changeset(
@@ -485,8 +483,7 @@ class Deployer:
     def create_stack(self, **kwargs):
         stack_name = kwargs.get("StackName")
         try:
-            resp = self._client.create_stack(**kwargs)
-            return resp
+            return self._client.create_stack(**kwargs)
         except botocore.exceptions.ClientError as ex:
             if "The bucket you are attempting to access must be addressed using the specified endpoint" in str(ex):
                 raise DeployBucketInDifferentRegionError(f"Failed to create/update stack {stack_name}") from ex
@@ -499,8 +496,7 @@ class Deployer:
     def update_stack(self, **kwargs):
         stack_name = kwargs.get("StackName")
         try:
-            resp = self._client.update_stack(**kwargs)
-            return resp
+            return self._client.update_stack(**kwargs)
         except botocore.exceptions.ClientError as ex:
             if "The bucket you are attempting to access must be addressed using the specified endpoint" in str(ex):
                 raise DeployBucketInDifferentRegionError(f"Failed to create/update stack {stack_name}") from ex

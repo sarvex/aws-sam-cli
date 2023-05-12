@@ -137,11 +137,7 @@ class SyncIntegBase(BuildIntegBase, PackageIntegBase):
         return ""
 
     def base_command(self):
-        command = "sam"
-        if os.getenv("SAM_CLI_DEV"):
-            command = "samdev"
-
-        return command
+        return "samdev" if os.getenv("SAM_CLI_DEV") else "sam"
 
     def get_sync_command_list(
         self,
@@ -204,8 +200,7 @@ class SyncIntegBase(BuildIntegBase, PackageIntegBase):
             command_list += ["--capabilities", str(capabilities)]
         elif capabilities_list:
             command_list.append("--capabilities")
-            for capability in capabilities_list:
-                command_list.append(str(capability))
+            command_list.extend(str(capability) for capability in capabilities_list)
         if role_arn:
             command_list += ["--role-arn", str(role_arn)]
         if notification_arns:

@@ -75,10 +75,12 @@ class AbstractLayerSyncFlow(SyncFlow, ABC):
 
     def _get_latest_layer_version(self):
         """Fetches all layer versions from remote and returns the latest one"""
-        layer_versions = self._lambda_client.list_layer_versions(LayerName=self._layer_arn).get("LayerVersions", [])
-        if not layer_versions:
+        if layer_versions := self._lambda_client.list_layer_versions(
+            LayerName=self._layer_arn
+        ).get("LayerVersions", []):
+            return layer_versions[0].get("Version")
+        else:
             raise NoLayerVersionsFoundError(self._layer_arn)
-        return layer_versions[0].get("Version")
 
     def sync(self) -> None:
         """
@@ -92,21 +94,21 @@ class AbstractLayerSyncFlow(SyncFlow, ABC):
         if self._zip_file and os.path.exists(self._zip_file):
             os.remove(self._zip_file)
 
-        dependencies: List[SyncFlow] = list()
+        dependencies: List[SyncFlow] = []
         dependent_functions = self._get_dependent_functions()
         if self._stacks:
-            for function in dependent_functions:
-                dependencies.append(
-                    FunctionLayerReferenceSync(
-                        function.full_path,
-                        cast(str, self._layer_arn),
-                        cast(int, self._new_layer_version),
-                        self._build_context,
-                        self._deploy_context,
-                        self._physical_id_mapping,
-                        self._stacks,
-                    )
+            dependencies.extend(
+                FunctionLayerReferenceSync(
+                    function.full_path,
+                    cast(str, self._layer_arn),
+                    cast(int, self._new_layer_version),
+                    self._build_context,
+                    self._deploy_context,
+                    self._physical_id_mapping,
+                    self._stacks,
                 )
+                for function in dependent_functions
+            )
         return dependencies
 
     def _get_resource_api_calls(self) -> List[ResourceAPICall]:
@@ -267,7 +269,7 @@ class FunctionLayerReferenceSync(SyncFlow):
             build_context,
             deploy_context,
             physical_id_mapping,
-            log_name="Function Layer Reference Sync " + function_identifier,
+            log_name=f"Function Layer Reference Sync {function_identifier}",
             stacks=stacks,
         )
         self._function_identifier = function_identifier

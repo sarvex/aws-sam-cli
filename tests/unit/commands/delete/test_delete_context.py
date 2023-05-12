@@ -20,17 +20,19 @@ class TestDeleteContext(TestCase):
     @patch.object(CfnUtils, "has_stack", MagicMock(return_value=(False)))
     def test_delete_context_stack_does_not_exist(self, patched_click_get_current_context, patched_click_echo):
         with DeleteContext(
-            stack_name="test",
-            region="us-east-1",
-            config_file="samconfig.toml",
-            config_env="default",
-            profile="test",
-            no_prompts=True,
-        ) as delete_context:
+                stack_name="test",
+                region="us-east-1",
+                config_file="samconfig.toml",
+                config_env="default",
+                profile="test",
+                no_prompts=True,
+            ) as delete_context:
 
             delete_context.run()
             expected_click_echo_calls = [
-                call(f"Error: The input stack test does" + f" not exist on Cloudformation in the region us-east-1"),
+                call(
+                    f"Error: The input stack test does not exist on Cloudformation in the region us-east-1"
+                )
             ]
             self.assertEqual(expected_click_echo_calls, patched_click_echo.call_args_list)
 
@@ -195,13 +197,13 @@ class TestDeleteContext(TestCase):
 
         patched_get_cf_template_name.return_value = "hello.template"
         with DeleteContext(
-            stack_name="test",
-            region="us-east-1",
-            config_file="samconfig.toml",
-            config_env="default",
-            profile="test",
-            no_prompts=None,
-        ) as delete_context:
+                stack_name="test",
+                region="us-east-1",
+                config_file="samconfig.toml",
+                config_env="default",
+                profile="test",
+                no_prompts=None,
+            ) as delete_context:
             patched_confirm.side_effect = [True, False, True]
             delete_context.s3_bucket = "s3_bucket"
             delete_context.s3_prefix = "s3_prefix"
@@ -211,15 +213,17 @@ class TestDeleteContext(TestCase):
             expected_confirmation_calls = [
                 call(
                     click.style(
-                        f"\tAre you sure you want to delete the stack test" + f" in the region us-east-1 ?",
+                        f"\tAre you sure you want to delete the stack test in the region us-east-1 ?",
                         bold=True,
                     ),
                     default=False,
                 ),
                 call(
                     click.style(
-                        "\tAre you sure you want to delete the folder"
-                        + f" s3_prefix in S3 which contains the artifacts?",
+                        (
+                            "\tAre you sure you want to delete the folder"
+                            + " s3_prefix in S3 which contains the artifacts?"
+                        ),
                         bold=True,
                     ),
                     default=False,
@@ -252,13 +256,13 @@ class TestDeleteContext(TestCase):
 
         patched_get_cf_template_name.return_value = "hello.template"
         with DeleteContext(
-            stack_name="test",
-            region="us-east-1",
-            config_file="samconfig.toml",
-            config_env="default",
-            profile="test",
-            no_prompts=None,
-        ) as delete_context:
+                stack_name="test",
+                region="us-east-1",
+                config_file="samconfig.toml",
+                config_env="default",
+                profile="test",
+                no_prompts=None,
+            ) as delete_context:
             patched_confirm.side_effect = [True, True]
             delete_context.s3_bucket = "s3_bucket"
 
@@ -267,7 +271,7 @@ class TestDeleteContext(TestCase):
             expected_confirmation_calls = [
                 call(
                     click.style(
-                        f"\tAre you sure you want to delete the stack test" + f" in the region us-east-1 ?",
+                        f"\tAre you sure you want to delete the stack test in the region us-east-1 ?",
                         bold=True,
                     ),
                     default=False,
@@ -301,17 +305,17 @@ class TestDeleteContext(TestCase):
 
         patched_get_cf_template_name.return_value = "hello.template"
         with DeleteContext(
-            stack_name="test",
-            region="us-east-1",
-            config_file="samconfig.toml",
-            config_env="default",
-            profile="test",
-            no_prompts=None,
-        ) as delete_context:
-            patched_confirm.side_effect = [True, False, True, True, True]
+                stack_name="test",
+                region="us-east-1",
+                config_file="samconfig.toml",
+                config_env="default",
+                profile="test",
+                no_prompts=None,
+            ) as delete_context:
             delete_context.s3_bucket = "s3_bucket"
             delete_context.s3_prefix = "s3_prefix"
 
+            patched_confirm.side_effect = [True, False, True, True, True]
             delete_context.run()
             # Now to check for all the defaults on confirmations.
             expected_confirmation_calls = [
@@ -347,8 +351,7 @@ class TestDeleteContext(TestCase):
                 ),
                 call(
                     click.style(
-                        f"\tECR repository test_id"
-                        + " may not be empty. Do you want to delete the repository and all the images in it ?",
+                        f"\tECR repository test_id may not be empty. Do you want to delete the repository and all the images in it ?",
                         bold=True,
                     ),
                     default=False,

@@ -83,9 +83,9 @@ class ResourceMetadataNormalizer:
                 if asset_path and asset_property:
                     resource_metadata[SAM_IS_NORMALIZED] = True
 
-            # Set SkipBuild metadata iff is-bundled metadata exists, and value is True
-            skip_build = resource_metadata.get(ASSET_BUNDLED_METADATA_KEY, False)
-            if skip_build:
+            if skip_build := resource_metadata.get(
+                ASSET_BUNDLED_METADATA_KEY, False
+            ):
                 ResourceMetadataNormalizer._update_resource_metadata(
                     resource_metadata,
                     {

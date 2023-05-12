@@ -73,7 +73,11 @@ class SamTemplateValidator:
             LOG.debug("Translated template is:\n%s", yaml_dump(template))
         except InvalidDocumentException as e:
             raise InvalidSamDocumentException(
-                functools.reduce(lambda message, error: message + " " + str(error), e.causes, str(e))
+                functools.reduce(
+                    lambda message, error: f"{message} {str(error)}",
+                    e.causes,
+                    str(e),
+                )
             ) from e
 
     def _replace_local_codeuri(self):
@@ -89,15 +93,18 @@ class SamTemplateValidator:
 
         for resource_type, properties in global_settings.items():
 
-            if resource_type == "Function":
-                if all(
-                    [
-                        _properties.get("Properties", {}).get("PackageType", ZIP) == ZIP
-                        for _, _properties in all_resources.items()
-                    ]
-                    + [_properties.get("PackageType", ZIP) == ZIP for _, _properties in global_settings.items()]
-                ):
-                    SamTemplateValidator._update_to_s3_uri("CodeUri", properties)
+            if resource_type == "Function" and all(
+                [
+                    _properties.get("Properties", {}).get("PackageType", ZIP)
+                    == ZIP
+                    for _, _properties in all_resources.items()
+                ]
+                + [
+                    _properties.get("PackageType", ZIP) == ZIP
+                    for _, _properties in global_settings.items()
+                ]
+            ):
+                SamTemplateValidator._update_to_s3_uri("CodeUri", properties)
 
         for _, resource in all_resources.items():
 
@@ -112,17 +119,23 @@ class SamTemplateValidator:
 
                 SamTemplateValidator._update_to_s3_uri("ContentUri", resource_dict)
 
-            if resource_type == "AWS::Serverless::Api":
-                if "DefinitionUri" in resource_dict:
-                    SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
+            if (
+                resource_type == "AWS::Serverless::Api"
+                and "DefinitionUri" in resource_dict
+            ):
+                SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
 
-            if resource_type == "AWS::Serverless::HttpApi":
-                if "DefinitionUri" in resource_dict:
-                    SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
+            if (
+                resource_type == "AWS::Serverless::HttpApi"
+                and "DefinitionUri" in resource_dict
+            ):
+                SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
 
-            if resource_type == "AWS::Serverless::StateMachine":
-                if "DefinitionUri" in resource_dict:
-                    SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
+            if (
+                resource_type == "AWS::Serverless::StateMachine"
+                and "DefinitionUri" in resource_dict
+            ):
+                SamTemplateValidator._update_to_s3_uri("DefinitionUri", resource_dict)
 
     def _replace_local_image(self):
         """
@@ -137,9 +150,12 @@ class SamTemplateValidator:
             is_image_function = resource_type == AWS_SERVERLESS_FUNCTION and properties.get("PackageType") == IMAGE
             is_local_image = resource.get("Metadata", {}).get("Dockerfile")
 
-            if is_image_function and is_local_image:
-                if "ImageUri" not in properties:
-                    properties["ImageUri"] = "111111111111.dkr.ecr.region.amazonaws.com/repository"
+            if (
+                is_image_function
+                and is_local_image
+                and "ImageUri" not in properties
+            ):
+                properties["ImageUri"] = "111111111111.dkr.ecr.region.amazonaws.com/repository"
 
     def _replace_local_openapi(self):
         """
@@ -154,7 +170,10 @@ class SamTemplateValidator:
         #       Location: openapi.yaml
         resources = self.sam_template.get("Resources", {})
         for _, resource in resources.items():
-            if not resource.get("Type", "") in [AWS_SERVERLESS_API, AWS_SERVERLESS_HTTPAPI]:
+            if resource.get("Type", "") not in [
+                AWS_SERVERLESS_API,
+                AWS_SERVERLESS_HTTPAPI,
+            ]:
                 continue
 
             transform_dict = resource.get("Properties", {}).get("DefinitionBody", {}).get("Fn::Transform", {})

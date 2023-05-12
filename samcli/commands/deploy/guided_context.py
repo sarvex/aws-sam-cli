@@ -279,8 +279,7 @@ class GuidedContext:
         _prompted_param_overrides = {}
         if parameter_override_from_template:
             for parameter_key, parameter_properties in parameter_override_from_template.items():
-                no_echo = parameter_properties.get("NoEcho", False)
-                if no_echo:
+                if no_echo := parameter_properties.get("NoEcho", False):
                     parameter = prompt(
                         f"\t{start_bold}Parameter {parameter_key}{end_bold}", type=click.STRING, hide_input=True
                     )
@@ -340,8 +339,9 @@ class GuidedContext:
         image_repositories = image_repositories if image_repositories is not None else {}
         updated_repositories = {}
         for image_repo_func_id, image_repo_uri in image_repositories.items():
-            repo_full_path = get_resource_full_path_by_id(stacks, ResourceIdentifier(image_repo_func_id))
-            if repo_full_path:
+            if repo_full_path := get_resource_full_path_by_id(
+                stacks, ResourceIdentifier(image_repo_func_id)
+            ):
                 updated_repositories[repo_full_path] = image_repo_uri
         self.function_provider = SamFunctionProvider(stacks, ignore_code_extraction_warnings=True)
         manager = CompanionStackManager(stack_name, region, s3_bucket, s3_prefix)
@@ -358,11 +358,10 @@ class GuidedContext:
 
         manager.set_functions(function_logical_ids, updated_repositories)
 
-        create_all_repos = self.prompt_create_all_repos(
+        if create_all_repos := self.prompt_create_all_repos(
             function_logical_ids, functions_without_repo, updated_repositories
-        )
-        if create_all_repos:
-            updated_repositories.update(manager.get_repository_mapping())
+        ):
+            updated_repositories |= manager.get_repository_mapping()
         else:
             updated_repositories = self.prompt_specify_repos(functions_without_repo, updated_repositories)
             manager.set_functions(function_logical_ids, updated_repositories)
@@ -532,7 +531,7 @@ class GuidedContext:
         functions: Dict[str, Function]
             Dictionary of functions in the stack to be deployed with key as their logical ID.
         """
-        for _, function_prop in functions.items():
+        for function_prop in functions.values():
             if function_prop.packagetype != IMAGE:
                 continue
             image = function_prop.imageuri

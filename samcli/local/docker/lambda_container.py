@@ -87,8 +87,8 @@ class LambdaContainer(Container):
         function_full_path str
             Optional. The function full path, unique in all stacks
         """
-        if not Runtime.has_value(runtime) and not packagetype == IMAGE:
-            raise ValueError("Unsupported Lambda runtime {}".format(runtime))
+        if not Runtime.has_value(runtime) and packagetype != IMAGE:
+            raise ValueError(f"Unsupported Lambda runtime {runtime}")
 
         image = LambdaContainer._get_image(
             lambda_image, runtime, packagetype, imageuri, layers, architecture, function_full_path
@@ -154,12 +154,7 @@ class LambdaContainer(Container):
         if not debug_options.debug_ports:
             return None
 
-        # container port : host port
-        ports_map = {}
-        for port in debug_options.debug_ports:
-            ports_map[port] = port
-
-        return ports_map
+        return {port: port for port in debug_options.debug_ports}
 
     @staticmethod
     def _get_additional_options(runtime: str, debug_options):

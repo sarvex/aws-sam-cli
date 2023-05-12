@@ -596,7 +596,4 @@ class TestInitWithArbitraryProject(TestCase):
 
 
 def _get_command():
-    command = "sam"
-    if os.getenv("SAM_CLI_DEV"):
-        command = "samdev"
-    return command
+    return "samdev" if os.getenv("SAM_CLI_DEV") else "sam"

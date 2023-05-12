@@ -29,17 +29,19 @@ class GuidedConfig:
         _, samconfig = self.get_config_ctx(config_file)
 
         status = "Found" if samconfig.exists() else "Not found"
-        msg = (
-            "Syntax invalid in samconfig.toml; save values "
-            "through sam deploy --guided to overwrite file with a valid set of values."
-        )
         config_sanity = samconfig.sanity_check()
         click.secho("\nConfiguring SAM deploy\n======================", fg="yellow")
         click.echo(f"\n\tLooking for config file [{config_file}] :  {status}")
         if samconfig.exists():
-            click.echo("\tReading default arguments  :  {}".format("Success" if config_sanity else "Failure"))
+            click.echo(
+                f'\tReading default arguments  :  {"Success" if config_sanity else "Failure"}'
+            )
 
         if not config_sanity and samconfig.exists():
+            msg = (
+                "Syntax invalid in samconfig.toml; save values "
+                "through sam deploy --guided to overwrite file with a valid set of values."
+            )
             raise GuidedDeployFailedError(msg)
 
     def save_config(
@@ -58,7 +60,7 @@ class GuidedConfig:
 
         for key, value in kwargs.items():
             if isinstance(value, (list, tuple)):
-                value = " ".join(val for val in value)
+                value = " ".join(value)
             if value:
                 samconfig.put(cmd_names, self.section, key, value, env=config_env)
 

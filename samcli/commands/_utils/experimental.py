@@ -1,4 +1,5 @@
 """Experimental flag"""
+
 import sys
 import logging
 
@@ -39,15 +40,24 @@ class ExperimentalEntry(ConfigEntry):
     persistent: bool = False
 
 
+
+
 class ExperimentalFlag:
     """Class for storing all experimental related ConfigEntries"""
 
-    All = ExperimentalEntry("experimentalAll", EXPERIMENTAL_ENV_VAR_PREFIX + "FEATURES")
-    Accelerate = ExperimentalEntry("experimentalAccelerate", EXPERIMENTAL_ENV_VAR_PREFIX + "ACCELERATE")
-    JavaMavenBuildScope = ExperimentalEntry(
-        "experimentalMavenScopeAndLayer", EXPERIMENTAL_ENV_VAR_PREFIX + "MAVEN_SCOPE_AND_LAYER"
+    All = ExperimentalEntry(
+        "experimentalAll", f"{EXPERIMENTAL_ENV_VAR_PREFIX}FEATURES"
     )
-    Esbuild = ExperimentalEntry("experimentalEsbuild", EXPERIMENTAL_ENV_VAR_PREFIX + "ESBUILD")
+    Accelerate = ExperimentalEntry(
+        "experimentalAccelerate", f"{EXPERIMENTAL_ENV_VAR_PREFIX}ACCELERATE"
+    )
+    JavaMavenBuildScope = ExperimentalEntry(
+        "experimentalMavenScopeAndLayer",
+        f"{EXPERIMENTAL_ENV_VAR_PREFIX}MAVEN_SCOPE_AND_LAYER",
+    )
+    Esbuild = ExperimentalEntry(
+        "experimentalEsbuild", f"{EXPERIMENTAL_ENV_VAR_PREFIX}ESBUILD"
+    )
 
 
 def is_experimental_enabled(config_entry: ExperimentalEntry) -> bool:
@@ -115,11 +125,11 @@ def get_enabled_experimental_flags() -> List[str]:
     List[str]
         List of strings which contains all enabled experimental flag names
     """
-    enabled_experimentals = []
-    for experimental_key, status in get_all_experimental_statues().items():
-        if status:
-            enabled_experimentals.append(experimental_key)
-    return enabled_experimentals
+    return [
+        experimental_key
+        for experimental_key, status in get_all_experimental_statues().items()
+        if status
+    ]
 
 
 def disable_all_experimental():
@@ -211,9 +221,10 @@ def force_experimental_option(
     def wrap(func):
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            if kwargs[option]:
-                if not prompt_experimental(config_entry=config_entry, prompt=prompt):
-                    sys.exit(1)
+            if kwargs[option] and not prompt_experimental(
+                config_entry=config_entry, prompt=prompt
+            ):
+                sys.exit(1)
             return func(*args, **kwargs)
 
         return wrapped_func

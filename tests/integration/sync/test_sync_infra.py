@@ -248,9 +248,7 @@ Requires capabilities : [CAPABILITY_AUTO_EXPAND]",
         ]
     )
     def test_cdk_templates(self, template_file, template_after, function_id, dependency_layer):
-        repository = ""
-        if function_id:
-            repository = f"{function_id}={self.ecr_repo_name}"
+        repository = f"{function_id}={self.ecr_repo_name}" if function_id else ""
         with tempfile.TemporaryDirectory() as temp:
             temp_path = Path(temp)
             shutil.copytree(str(self.test_data_path.joinpath("infra/cdk")), str(temp_path.joinpath("cdk")))

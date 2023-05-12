@@ -73,8 +73,9 @@ class LockDistributor:
         self._dict_lock = self._create_new_lock()
         self._locks = (
             self._manager.dict()
-            if self._lock_type == LockDistributorType.PROCESS and self._manager is not None
-            else dict()
+            if self._lock_type == LockDistributorType.PROCESS
+            and self._manager is not None
+            else {}
         )
 
     def _create_new_lock(self) -> threading.Lock:
@@ -121,10 +122,7 @@ class LockDistributor:
         Dict[str, threading.Lock]
             Dictionary mapping keys to locks
         """
-        lock_mapping = dict()
-        for key in keys:
-            lock_mapping[key] = self.get_lock(key)
-        return lock_mapping
+        return {key: self.get_lock(key) for key in keys}
 
     def get_lock_chain(self, keys: List[str]) -> LockChain:
         """Similar to get_locks, but retrieves a LockChain object instead of a dictionary

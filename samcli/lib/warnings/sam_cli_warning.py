@@ -21,11 +21,13 @@ def _get_deployment_preferences_status(function):
     Takes a AWS::Serverless::Function resource and checks if resource have a deployment preferences applied
     to it. If DeploymentPreference found then it returns its status if it is enabled or not.
     """
-    deployment_preference = function.get("Properties", {}).get("DeploymentPreference", None)
-    if not deployment_preference:
+    if deployment_preference := function.get("Properties", {}).get(
+        "DeploymentPreference", None
+    ):
+        return deployment_preference.get("Enabled", True)  # enabled by default
+    else:
         # Missing deployment preferences treated as not enabled.
         return False
-    return deployment_preference.get("Enabled", True)  # enabled by default
 
 
 class TemplateWarningsChecker:
@@ -55,9 +57,7 @@ class TemplateWarningsChecker:
             return None
 
         should_warn, warning_message = warning.check(template_dict)
-        if should_warn:
-            return warning_message
-        return None
+        return warning_message if should_warn else None
 
 
 class CodeDeployWarning(TemplateWarning):
@@ -111,10 +111,15 @@ please read these docs[1]
             for (_, resource) in template_dict.get("Resources", {}).items()
             if resource.get("Type", "") == "AWS::Serverless::Function"
         ]
-        for function in functions:
-            if self._have_condition(function) and self._have_deployment_preferences(function):
-                return (True, self.WARNING_MESSAGE)
-        return (False, "")
+        return next(
+            (
+                (True, self.WARNING_MESSAGE)
+                for function in functions
+                if self._have_condition(function)
+                and self._have_deployment_preferences(function)
+            ),
+            (False, ""),
+        )
 
     @staticmethod
     def _have_condition(function: Dict) -> bool:

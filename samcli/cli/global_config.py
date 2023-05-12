@@ -76,7 +76,7 @@ class GlobalConfig(metaclass=Singleton):
         self._config_dir = None
         self._config_filename = None
         self._config_data = None
-        self._persistent_fields = list()
+        self._persistent_fields = []
 
     @property
     def config_dir(self) -> Path:

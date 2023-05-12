@@ -22,7 +22,7 @@ class TestGlobalConfig(TestCase):
         # Force singleton to recreate after each test
         GlobalConfig._Singleton__instance = None
         os.environ.clear()
-        os.environ.update(self.saved_env_var)
+        os.environ |= self.saved_env_var
 
     def test_installation_id_with_side_effect(self):
         gc = GlobalConfig()

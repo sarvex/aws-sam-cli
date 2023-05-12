@@ -142,8 +142,7 @@ class LambdaBuildContainer(Container):
                     "source_dir": container_dirs["source_dir"],
                     "artifacts_dir": container_dirs["artifacts_dir"],
                     "scratch_dir": container_dirs["scratch_dir"],
-                    # Path is always inside a Linux container. So '/' is valid
-                    "manifest_path": "{}/{}".format(container_dirs["manifest_dir"], manifest_file_name),
+                    "manifest_path": f'{container_dirs["manifest_dir"]}/{manifest_file_name}',
                     "runtime": runtime,
                     "optimizations": optimizations,
                     "options": options,
@@ -180,10 +179,10 @@ class LambdaBuildContainer(Container):
         """
         base = "/tmp/samcli"
         result = {
-            "source_dir": "{}/source".format(base),
-            "artifacts_dir": "{}/artifacts".format(base),
-            "scratch_dir": "{}/scratch".format(base),
-            "manifest_dir": "{}/manifest".format(base),
+            "source_dir": f"{base}/source",
+            "artifacts_dir": f"{base}/artifacts",
+            "scratch_dir": f"{base}/scratch",
+            "manifest_dir": f"{base}/manifest",
         }
 
         if pathlib.PurePath(source_dir) == pathlib.PurePath(manifest_dir):
@@ -259,7 +258,7 @@ class LambdaBuildContainer(Container):
         str
             valid image name
         """
-        return f"{LambdaBuildContainer._IMAGE_URI_PREFIX}-{runtime}:" + LambdaBuildContainer.get_image_tag(architecture)
+        return f"{LambdaBuildContainer._IMAGE_URI_PREFIX}-{runtime}:{LambdaBuildContainer.get_image_tag(architecture)}"
 
     @staticmethod
     def get_image_tag(architecture):

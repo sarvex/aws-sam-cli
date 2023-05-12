@@ -67,8 +67,9 @@ class XRayTraceSegment:
         self.sub_segments: List[XRayTraceSegment] = []
 
         sub_segments = document.get("subsegments", [])
-        for sub_segment in sub_segments:
-            self.sub_segments.append(XRayTraceSegment(sub_segment))
+        self.sub_segments.extend(
+            XRayTraceSegment(sub_segment) for sub_segment in sub_segments
+        )
         self.sub_segments.sort(key=start_time_getter)
 
     def get_duration(self):
@@ -138,9 +139,7 @@ class XRayGraphServiceInfo:
         """
         covert the edges information to a list of edge reference ids
         """
-        edge_ids: List[int] = []
-        for edge in edges:
-            edge_ids.append(edge.get("ReferenceId", -1))
+        edge_ids: List[int] = [edge.get("ReferenceId", -1) for edge in edges]
         self.edge_ids = edge_ids
 
     def _set_summary_statistics(self, summary_statistics):
@@ -150,11 +149,9 @@ class XRayGraphServiceInfo:
         if not summary_statistics:
             return
         self.ok_count = summary_statistics.get("OkCount", 0)
-        error_statistics = summary_statistics.get("ErrorStatistics", None)
-        if error_statistics:
+        if error_statistics := summary_statistics.get("ErrorStatistics", None):
             self.error_count = error_statistics.get("TotalCount", 0)
-        fault_statistics = summary_statistics.get("FaultStatistics", None)
-        if fault_statistics:
+        if fault_statistics := summary_statistics.get("FaultStatistics", None):
             self.fault_count = fault_statistics.get("TotalCount", 0)
         self.total_count = summary_statistics.get("TotalCount", 0)
         self.response_time = summary_statistics.get("TotalResponseTime", 0)

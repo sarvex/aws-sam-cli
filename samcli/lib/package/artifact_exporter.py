@@ -216,11 +216,14 @@ class Template:
             resource_type = resource.get("Type", None)
             resource_dict = resource.get("Properties", None)
 
-            if resource_dict is not None:
-                if "CodeUri" not in resource_dict and resource_type == AWS_SERVERLESS_FUNCTION:
-                    code_uri_global = self.template_dict.get("Globals", {}).get("Function", {}).get("CodeUri", None)
-                    if code_uri_global is not None and resource_dict is not None:
-                        resource_dict["CodeUri"] = code_uri_global
+            if (
+                resource_dict is not None
+                and "CodeUri" not in resource_dict
+                and resource_type == AWS_SERVERLESS_FUNCTION
+            ):
+                code_uri_global = self.template_dict.get("Globals", {}).get("Function", {}).get("CodeUri", None)
+                if code_uri_global is not None and resource_dict is not None:
+                    resource_dict["CodeUri"] = code_uri_global
 
     def export(self) -> Dict:
         """
@@ -335,10 +338,7 @@ class Template:
                 s3_info = exporter.get_property_value(resource_dict)
 
                 result["s3_bucket"] = s3_info["Bucket"]
-                s3_key = s3_info["Key"]
-
-                # Extract the prefix from the key
-                if s3_key:
+                if s3_key := s3_info["Key"]:
                     key_split = s3_key.rsplit("/", 1)
                     if len(key_split) > 1:
                         result["s3_prefix"] = key_split[0]

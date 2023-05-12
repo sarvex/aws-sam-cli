@@ -103,11 +103,7 @@ class DeleteContext:
         Initialize all the clients being used by sam delete.
         """
         if not self.region:
-            if not self.no_prompts:
-                session = boto3.Session()
-                region = session.region_name
-                self.region = region if region else "us-east-1"
-            else:
+            if self.no_prompts:
                 # TODO: as part of the guided and non-guided context separation, we need also to move the options
                 # validations to a validator similar to samcli/lib/cli_validation/image_repository_validation.py.
                 raise click.BadOptionUsage(
@@ -115,6 +111,9 @@ class DeleteContext:
                     message="Missing option '--region', region is required to run the non guided delete command.",
                 )
 
+            session = boto3.Session()
+            region = session.region_name
+            self.region = region if region else "us-east-1"
         if self.profile:
             Context.get_current_context().profile = self.profile
         if self.region:
@@ -290,8 +289,9 @@ class DeleteContext:
         # ECR companion stack delete prompts, if it exists
         companion_stack = CompanionStack(self.stack_name)
 
-        ecr_companion_stack_exists = self.cf_utils.has_stack(stack_name=companion_stack.stack_name)
-        if ecr_companion_stack_exists:
+        if ecr_companion_stack_exists := self.cf_utils.has_stack(
+            stack_name=companion_stack.stack_name
+        ):
             LOG.debug("ECR Companion stack found for the input stack")
             self.companion_stack_name = companion_stack.stack_name
             self.delete_ecr_companion_stack()
@@ -342,9 +342,7 @@ class DeleteContext:
             )
 
         if self.no_prompts or delete_stack:
-            is_deployed = self.cf_utils.has_stack(stack_name=self.stack_name)
-            # Check if the provided stack-name exists
-            if is_deployed:
+            if is_deployed := self.cf_utils.has_stack(stack_name=self.stack_name):
                 LOG.debug("Input stack is deployed, continue deleting")
                 self.delete()
                 click.echo("\nDeleted successfully")

@@ -71,7 +71,7 @@ class BuildStrategy(ABC):
         """
         result = {}
         with self:
-            result.update(self._build_layers(self._build_graph))
+            result |= self._build_layers(self._build_graph)
             result.update(self._build_functions(self._build_graph))
 
         return result
@@ -82,7 +82,9 @@ class BuildStrategy(ABC):
         """
         function_build_results = {}
         for build_definition in build_graph.get_function_build_definitions():
-            function_build_results.update(self.build_single_function_definition(build_definition))
+            function_build_results |= self.build_single_function_definition(
+                build_definition
+            )
 
         return function_build_results
 
@@ -99,7 +101,7 @@ class BuildStrategy(ABC):
         """
         layer_build_results = {}
         for layer_definition in build_graph.get_layer_build_definitions():
-            layer_build_results.update(self.build_single_layer_definition(layer_definition))
+            layer_build_results |= self.build_single_layer_definition(layer_definition)
 
         return layer_build_results
 
@@ -132,7 +134,6 @@ class DefaultBuildStrategy(BuildStrategy):
         """
         Build the unique definition and then copy the artifact to the corresponding function folder
         """
-        function_build_results = {}
         LOG.info(
             "Building codeuri: %s runtime: %s metadata: %s architecture: %s functions: %s",
             build_definition.codeuri,
@@ -166,8 +167,7 @@ class DefaultBuildStrategy(BuildStrategy):
             build_definition.dependencies_dir if is_experimental_enabled(ExperimentalFlag.Accelerate) else None,
             build_definition.download_dependencies,
         )
-        function_build_results[single_full_path] = result
-
+        function_build_results = {single_full_path: result}
         # copy results to other functions
         if build_definition.packagetype == ZIP:
             for function in build_definition.functions:
@@ -242,7 +242,7 @@ class CachedBuildStrategy(BuildStrategy):
     def build(self) -> Dict[str, str]:
         result = {}
         with self._delegate_build_strategy:
-            result.update(super().build())
+            result |= super().build()
         return result
 
     def build_single_function_definition(self, build_definition: FunctionBuildDefinition) -> Dict[str, str]:
@@ -263,7 +263,7 @@ class CachedBuildStrategy(BuildStrategy):
                 build_definition.uuid,
             )
             build_result = self._delegate_build_strategy.build_single_function_definition(build_definition)
-            function_build_results.update(build_result)
+            function_build_results |= build_result
 
             if cache_function_dir.exists():
                 shutil.rmtree(str(cache_function_dir))
@@ -302,7 +302,7 @@ class CachedBuildStrategy(BuildStrategy):
                 layer_definition.uuid,
             )
             build_result = self._delegate_build_strategy.build_single_layer_definition(layer_definition)
-            layer_build_result.update(build_result)
+            layer_build_result |= build_result
 
             if cache_function_dir.exists():
                 shutil.rmtree(str(cache_function_dir))
@@ -363,7 +363,7 @@ class ParallelBuildStrategy(BuildStrategy):
 
             async_results = self._async_context.run_async()
             for async_result in async_results:
-                result.update(async_result)
+                result |= async_result
 
         return result
 
@@ -410,8 +410,8 @@ class IncrementalBuildStrategy(BuildStrategy):
 
     def build(self) -> Dict[str, str]:
         result = {}
-        with self, self._delegate_build_strategy:
-            result.update(super().build())
+        with (self, self._delegate_build_strategy):
+            result |= super().build()
         return result
 
     def build_single_function_definition(self, build_definition: FunctionBuildDefinition) -> Dict[str, str]:
@@ -506,8 +506,8 @@ class CachedOrIncrementalBuildStrategyWrapper(BuildStrategy):
 
     def build(self) -> Dict[str, str]:
         result = {}
-        with self._cached_build_strategy, self._incremental_build_strategy:
-            result.update(super().build())
+        with (self._cached_build_strategy, self._incremental_build_strategy):
+            result |= super().build()
         return result
 
     def build_single_function_definition(self, build_definition: FunctionBuildDefinition) -> Dict[str, str]:
@@ -562,8 +562,7 @@ class CachedOrIncrementalBuildStrategyWrapper(BuildStrategy):
         if not runtime or not is_experimental_enabled(ExperimentalFlag.Accelerate):
             return False
 
-        for supported_runtime_prefix in CachedOrIncrementalBuildStrategyWrapper.SUPPORTED_RUNTIME_PREFIXES:
-            if runtime.startswith(supported_runtime_prefix):
-                return True
-
-        return False
+        return any(
+            runtime.startswith(supported_runtime_prefix)
+            for supported_runtime_prefix in CachedOrIncrementalBuildStrategyWrapper.SUPPORTED_RUNTIME_PREFIXES
+        )

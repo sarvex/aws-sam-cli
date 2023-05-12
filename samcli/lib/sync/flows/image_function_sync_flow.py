@@ -99,7 +99,7 @@ class ImageFunctionSyncFlow(FunctionSyncFlow):
         if not ecr_repo:
             LOG.debug("%sGetting ECR Repo from Remote Function", self.log_prefix)
             function_result = self._lambda_client.get_function(FunctionName=function_physical_id)
-            ecr_repo = function_result.get("Code", dict()).get("ImageUri", "").split(":")[0]
+            ecr_repo = function_result.get("Code", {}).get("ImageUri", "").split(":")[0]
         ecr_uploader = ECRUploader(self._docker_client, self._ecr_client, ecr_repo, None)
         image_uri = ecr_uploader.upload(self._image_name, self._function_identifier)
 

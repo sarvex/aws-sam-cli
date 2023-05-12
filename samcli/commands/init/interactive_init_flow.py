@@ -227,10 +227,20 @@ def _generate_default_hello_world_application(
     Tuple
         configuration for a default Hello World Example
     """
-    is_package_type_image = bool(package_type == IMAGE)
-    if use_case == "Hello World Example" and not (runtime or base_image or is_package_type_image or dependency_manager):
-        if click.confirm("\n Use the most popular runtime and package type? (Python and zip)"):
-            runtime, package_type, dependency_manager, pt_explicit = "python3.9", ZIP, "pip", True
+    is_package_type_image = package_type == IMAGE
+    if (
+        use_case == "Hello World Example"
+        and not (
+            runtime
+            or base_image
+            or is_package_type_image
+            or dependency_manager
+        )
+        and click.confirm(
+            "\n Use the most popular runtime and package type? (Python and zip)"
+        )
+    ):
+        runtime, package_type, dependency_manager, pt_explicit = "python3.9", ZIP, "pip", True
     return (runtime, package_type, dependency_manager, pt_explicit)
 
 
@@ -353,8 +363,7 @@ def _get_runtime_from_image(image):
     """
     Get corresponding runtime from the base-image parameter
     """
-    runtime = image[image.find("/") + 1 : image.find("-")]
-    return runtime
+    return image[image.find("/") + 1 : image.find("-")]
 
 
 def _get_image_from_runtime(runtime):
@@ -365,7 +374,9 @@ def _get_image_from_runtime(runtime):
 
 
 def _get_dependency_manager(options, dependency_manager, runtime):
-    valid_dep_managers = sorted(list(set(template["dependencyManager"] for template in options)))
+    valid_dep_managers = sorted(
+        list({template["dependencyManager"] for template in options})
+    )
     if not dependency_manager:
         if len(valid_dep_managers) == 1:
             dependency_manager = valid_dep_managers[0]
@@ -378,7 +389,7 @@ def _get_dependency_manager(options, dependency_manager, runtime):
             dependency_manager = _get_choice_from_options(
                 dependency_manager, valid_dep_managers, question, "Dependency manager"
             )
-    elif dependency_manager and dependency_manager not in valid_dep_managers:
+    elif dependency_manager not in valid_dep_managers:
         msg = (
             f"Lambda Runtime {runtime} and dependency manager {dependency_manager} "
             + "do not have an available initialization template."
@@ -392,7 +403,7 @@ def _get_schema_template_details(schemas_api_caller):
         return get_schema_template_details(schemas_api_caller)
     except ClientError as e:
         raise SchemasApiException(
-            "Exception occurs while getting Schemas template parameter. %s" % e.response["Error"]["Message"]
+            f'Exception occurs while getting Schemas template parameter. {e.response["Error"]["Message"]}'
         ) from e
 
 
@@ -405,7 +416,7 @@ def _package_schemas_code(runtime, schemas_api_caller, schema_template_details, 
         download_location.close()
     except (ClientError, WaiterError) as e:
         raise SchemasApiException(
-            "Exception occurs while packaging Schemas code. %s" % e.response["Error"]["Message"]
+            f'Exception occurs while packaging Schemas code. {e.response["Error"]["Message"]}'
         ) from e
     finally:
         remove(download_location.name)

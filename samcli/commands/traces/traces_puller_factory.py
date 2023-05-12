@@ -40,8 +40,9 @@ def generate_trace_puller(
     -------
         Puller instance with desired configuration
     """
-    pullers: List[ObservabilityPuller] = []
-    pullers.append(XRayTracePuller(xray_client, generate_xray_event_consumer(output)))
+    pullers: List[ObservabilityPuller] = [
+        XRayTracePuller(xray_client, generate_xray_event_consumer(output))
+    ]
     pullers.append(XRayServiceGraphPuller(xray_client, generate_xray_service_graph_consumer(output)))
 
     return ObservabilityCombinedPuller(pullers)

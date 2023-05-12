@@ -53,11 +53,11 @@ def print_deploy_args(
 
     capabilities_string = json.dumps(capabilities)
 
-    _signing_profiles = {}
     if signing_profiles:
-        for key, value in signing_profiles.items():
-            _signing_profiles[key] = f"{value['profile_name']}:{value['profile_owner']}"
-
+        _signing_profiles = {
+            key: f"{value['profile_name']}:{value['profile_owner']}"
+            for key, value in signing_profiles.items()
+        }
     image_repository_format_text = (
         json.dumps(image_repository, indent=4) if isinstance(image_repository, dict) else image_repository
     )

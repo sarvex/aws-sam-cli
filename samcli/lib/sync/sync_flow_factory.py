@@ -70,7 +70,7 @@ class SyncFlowFactory(ResourceTypeBasedFactory[SyncFlow]):  # pylint: disable=E1
         self._deploy_context = deploy_context
         self._build_context = build_context
         self._auto_dependency_layer = auto_dependency_layer
-        self._physical_id_mapping = dict()
+        self._physical_id_mapping = {}
 
     def load_physical_id_mapping(self) -> None:
         """Load physical IDs of the stack resources from remote"""
@@ -104,7 +104,7 @@ class SyncFlowFactory(ResourceTypeBasedFactory[SyncFlow]):  # pylint: disable=E1
     def _create_lambda_flow(
         self, resource_identifier: ResourceIdentifier, resource: Dict[str, Any]
     ) -> Optional[FunctionSyncFlow]:
-        resource_properties = resource.get("Properties", dict())
+        resource_properties = resource.get("Properties", {})
         package_type = resource_properties.get("PackageType", ZIP)
         runtime = resource_properties.get("Runtime")
         if package_type == ZIP:

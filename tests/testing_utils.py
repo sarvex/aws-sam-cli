@@ -138,7 +138,7 @@ def read_until(process: Popen, callback: Callable[[str, List[str]], None], timeo
 
     def _read_output():
         try:
-            outputs = list()
+            outputs = []
             for output in process.stdout:
                 outputs.append(output)
                 LOG.info(output.encode("utf-8"))

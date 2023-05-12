@@ -20,7 +20,7 @@ class TestParallelRequests(StartLambdaIntegBaseClass):
     template_path = "/testdata/invoke/template.yml"
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -59,7 +59,7 @@ class TestLambdaServiceErrorCases(StartLambdaIntegBaseClass):
     template_path = "/testdata/invoke/template.yml"
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -120,7 +120,7 @@ class TestLambdaService(StartLambdaIntegBaseClass):
     parent_path = ""
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -257,7 +257,7 @@ class TestLambdaService(StartLambdaIntegBaseClass):
 
 class TestWarmContainersBaseClass(StartLambdaIntegBaseClass):
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -418,7 +418,7 @@ class TestImagePackageType(StartLambdaIntegBaseClass):
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -448,7 +448,7 @@ class TestImagePackageTypeWithEagerWarmContainersMode(StartLambdaIntegBaseClass)
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -478,7 +478,7 @@ class TestImagePackageTypeWithEagerLazyContainersMode(StartLambdaIntegBaseClass)
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -531,7 +531,7 @@ def handler(event, context):
     container_mode = ContainersInitializationMode.EAGER.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -624,7 +624,7 @@ def handler2(event, context):
     container_mode = ContainersInitializationMode.EAGER.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -727,7 +727,7 @@ def handler2(event, context):
     container_mode = ContainersInitializationMode.EAGER.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -819,7 +819,7 @@ def handler(event, context):
     container_mode = ContainersInitializationMode.EAGER.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -897,7 +897,7 @@ COPY main.py ./"""
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1003,7 +1003,7 @@ COPY main.py ./"""
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1069,7 +1069,7 @@ def handler(event, context):
     container_mode = ContainersInitializationMode.LAZY.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1146,7 +1146,7 @@ COPY main.py ./"""
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1240,7 +1240,7 @@ def handler2(event, context):
     container_mode = ContainersInitializationMode.LAZY.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1343,7 +1343,7 @@ def handler2(event, context):
     container_mode = ContainersInitializationMode.LAZY.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1435,7 +1435,7 @@ def handler(event, context):
     container_mode = ContainersInitializationMode.LAZY.value
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1541,7 +1541,7 @@ COPY main.py ./"""
     parameter_overrides = {"ImageUri": f"helloworldfunction:{tag}"}
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -1590,7 +1590,7 @@ class TestLambdaServiceWithCustomInvokeImages(StartLambdaIntegBaseClass):
     ]
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,

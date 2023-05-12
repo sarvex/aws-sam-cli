@@ -224,7 +224,6 @@ class InteractiveInitFlow:
 
 
 def _load_pipeline_bootstrap_resources() -> Tuple[List[str], Dict[str, str]]:
-    section = "parameters"
     context: Dict = {}
 
     config = SamConfig(PIPELINE_CONFIG_DIR, PIPELINE_CONFIG_FILENAME)
@@ -240,6 +239,7 @@ def _load_pipeline_bootstrap_resources() -> Tuple[List[str], Dict[str, str]]:
         for stage_configuration_name in config.get_stage_configuration_names()
         if stage_configuration_name != "default"
     ]
+    section = "parameters"
     for index, stage in enumerate(stage_configuration_names):
         for key, value in config.get_all(_get_bootstrap_command_names(), section, stage).items():
             context[str([stage, key])] = value
@@ -249,12 +249,13 @@ def _load_pipeline_bootstrap_resources() -> Tuple[List[str], Dict[str, str]]:
 
     # pre-load the list of stage names detected from pipelineconfig.toml
     stage_names_message = (
-        "Here are the stage configuration names detected "
-        + f"in {os.path.join(PIPELINE_CONFIG_DIR, PIPELINE_CONFIG_FILENAME)}:\n"
+        f"Here are the stage configuration names detected in {os.path.join(PIPELINE_CONFIG_DIR, PIPELINE_CONFIG_FILENAME)}:\n"
         + "\n".join(
             [
                 f"\t{index + 1} - {stage_configuration_name}"
-                for index, stage_configuration_name in enumerate(stage_configuration_names)
+                for index, stage_configuration_name in enumerate(
+                    stage_configuration_names
+                )
             ]
         )
     )

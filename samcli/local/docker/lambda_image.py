@@ -203,7 +203,9 @@ class LambdaImage:
             + "-"
             + architecture
             + "-"
-            + hashlib.sha256("-".join([layer.name for layer in layers]).encode("utf-8")).hexdigest()[0:25]
+            + hashlib.sha256(
+                "-".join([layer.name for layer in layers]).encode("utf-8")
+            ).hexdigest()[:25]
         )
 
     def _build_image(self, base_image, docker_tag, layers, architecture, stream=None):
@@ -227,7 +229,7 @@ class LambdaImage:
         dockerfile_content = self._generate_dockerfile(base_image, layers, architecture)
 
         # Create dockerfile in the same directory of the layer cache
-        dockerfile_name = "dockerfile_" + str(uuid.uuid4())
+        dockerfile_name = f"dockerfile_{str(uuid.uuid4())}"
         full_dockerfile_path = Path(self.layer_downloader.layer_cache, dockerfile_name)
         stream_writer = stream or StreamWriter(sys.stderr)
 
@@ -238,11 +240,11 @@ class LambdaImage:
             # add dockerfile and rapid source paths
             tar_paths = {
                 str(full_dockerfile_path): "Dockerfile",
-                self._RAPID_SOURCE_PATH: "/" + get_rapid_name(architecture),
+                self._RAPID_SOURCE_PATH: f"/{get_rapid_name(architecture)}",
             }
 
             for layer in layers:
-                tar_paths[layer.codeuri] = "/" + layer.name
+                tar_paths[layer.codeuri] = f"/{layer.name}"
 
             # Set permission for all the files in the tarball to 500(Read and Execute Only)
             # This is need for systems without unix like permission bits(Windows) while creating a unix image
@@ -313,7 +315,9 @@ class LambdaImage:
             + f"RUN mv {rie_path}{rie_name} {rie_path}aws-lambda-rie && chmod +x {rie_path}aws-lambda-rie\n"
         )
         for layer in layers:
-            dockerfile_content = dockerfile_content + f"ADD {layer.name} {LambdaImage._LAYERS_DIR}\n"
+            dockerfile_content = (
+                f"{dockerfile_content}ADD {layer.name} {LambdaImage._LAYERS_DIR}\n"
+            )
         return dockerfile_content
 
     def _remove_rapid_images(self, repo: str) -> None:
@@ -368,4 +372,4 @@ class LambdaImage:
         bool
             return True if it is current and vice versa
         """
-        return bool(f"-{version}" in image_name)
+        return f"-{version}" in image_name

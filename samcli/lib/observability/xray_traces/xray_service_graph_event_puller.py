@@ -49,14 +49,8 @@ class XRayServiceGraphPuller(AbstractXRayPuller):
         result_paginator = self.xray_client.get_paginator("get_service_graph")
         result_iterator = result_paginator.paginate(**kwargs)
         for result in result_iterator:
-            services = result.get("Services", [])
-
-            if not services:
-                LOG.debug("No service graph found%s")
-            else:
-                # update latest fetched event
-                event_end_time = result.get("EndTime", None)
-                if event_end_time:
+            if services := result.get("Services", []):
+                if event_end_time := result.get("EndTime", None):
                     utc_end_time = to_utc(event_end_time)
                     latest_event_time = utc_to_timestamp(utc_end_time)
                     if latest_event_time > self.latest_event_time:
@@ -67,6 +61,8 @@ class XRayServiceGraphPuller(AbstractXRayPuller):
                 if xray_service_graph_event.get_hash() not in self._previous_xray_service_graphs:
                     self.consumer.consume(xray_service_graph_event)
                 self._previous_xray_service_graphs.add(xray_service_graph_event.get_hash())
+            else:
+                LOG.debug("No service graph found%s")
 
     def load_events(self, event_ids: List[str]):
         LOG.debug("Loading specific service graph events are not supported via XRay Service Graph")

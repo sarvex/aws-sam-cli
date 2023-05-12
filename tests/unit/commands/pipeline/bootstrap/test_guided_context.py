@@ -112,10 +112,7 @@ class TestGuidedContext(TestCase):
         txt = txt.lower()
         for kall in click_prompt_mock.call_args_list:
             args, kwargs = kall
-            if args:
-                text = args[0].lower()
-            else:
-                text = kwargs.get("text", "").lower()
+            text = args[0].lower() if args else kwargs.get("text", "").lower()
             if txt in text:
                 return True
         return False

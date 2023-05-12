@@ -213,10 +213,10 @@ class LambdaFunctionCodeTrigger(CodeResourceTrigger):
             raise FunctionNotFound()
         self._function = function
 
-        code_uri = self._get_code_uri()
-        if not code_uri:
+        if code_uri := self._get_code_uri():
+            self._code_uri = code_uri
+        else:
             raise MissingCodeUri()
-        self._code_uri = code_uri
 
     @abstractmethod
     def _get_code_uri(self) -> Optional[str]:
@@ -291,10 +291,10 @@ class LambdaLayerCodeTrigger(CodeResourceTrigger):
         if not layer:
             raise ResourceNotFound()
         self._layer = layer
-        code_uri = self._layer.codeuri
-        if not code_uri:
+        if code_uri := self._layer.codeuri:
+            self._code_uri = code_uri
+        else:
             raise MissingCodeUri()
-        self._code_uri = code_uri
 
     def get_path_handlers(self) -> List[PathHandler]:
         """

@@ -41,10 +41,10 @@ def image_repository_validation(func):
         # looking for resources that have an IMAGE based packagetype.
 
         required = any(
-            [
-                _template_artifact == IMAGE
-                for _template_artifact in get_template_artifacts_format(template_file=template_file)
-            ]
+            _template_artifact == IMAGE
+            for _template_artifact in get_template_artifacts_format(
+                template_file=template_file
+            )
         )
 
         validators = [
@@ -63,7 +63,9 @@ def image_repository_validation(func):
             ),
             Validator(
                 validation_function=lambda: not guided
-                and not (image_repository or image_repositories or resolve_image_repos)
+                and not image_repository
+                and not image_repositories
+                and not resolve_image_repos
                 and required,
                 exception=click.BadOptionUsage(
                     option_name="--image-repositories",
@@ -76,7 +78,9 @@ def image_repository_validation(func):
                 and (
                     image_repositories
                     and not resolve_image_repos
-                    and not _is_all_image_funcs_provided(template_file, image_repositories, parameters_overrides)
+                    and not _is_all_image_funcs_provided(
+                        template_file, image_repositories, parameters_overrides
+                    )
                 ),
                 exception=click.BadOptionUsage(
                     option_name="--image-repositories",

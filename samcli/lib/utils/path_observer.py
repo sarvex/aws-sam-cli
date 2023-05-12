@@ -134,10 +134,7 @@ class HandlerObserver(Observer):  # pylint: disable=too-many-ancestors
         List[ObservedWatch]
             List of ObservedWatch corresponding to path_handlers in the same order.
         """
-        watches = list()
-        for path_handler in path_handlers:
-            watches.append(self.schedule_handler(path_handler))
-        return watches
+        return [self.schedule_handler(path_handler) for path_handler in path_handlers]
 
     def schedule_handler(self, path_handler: PathHandler) -> ObservedWatch:
         """Schedule a PathHandler

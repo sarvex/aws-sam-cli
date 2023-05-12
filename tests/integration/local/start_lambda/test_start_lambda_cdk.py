@@ -11,7 +11,7 @@ class TestCDKLambdaService(StartLambdaIntegBaseClass):
     template_path = "/testdata/invoke/cdk/cdk_template.yaml"
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,
@@ -71,7 +71,7 @@ class TestLambdaServiceErrorCases(StartLambdaIntegBaseClass):
     template_path = "/testdata/invoke/cdk/cdk_template.yaml"
 
     def setUp(self):
-        self.url = "http://127.0.0.1:{}".format(self.port)
+        self.url = f"http://127.0.0.1:{self.port}"
         self.lambda_client = boto3.client(
             "lambda",
             endpoint_url=self.url,

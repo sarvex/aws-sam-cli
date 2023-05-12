@@ -161,8 +161,9 @@ class BuildContext:
         """Runs the building process by creating an ApplicationBuilder."""
         template_dict = get_template_data(self._template_file)
         template_transform = template_dict.get("Transform", "")
-        is_sam_template = isinstance(template_transform, str) and template_transform.startswith("AWS::Serverless")
-        if is_sam_template:
+        if is_sam_template := isinstance(
+            template_transform, str
+        ) and template_transform.startswith("AWS::Serverless"):
             SamApiProvider.check_implicit_api_resource_ids(self.stacks)
 
         try:
@@ -255,13 +256,13 @@ class BuildContext:
 
         invoke_cmd = "sam local invoke"
         if not is_default_build_dir:
-            invoke_cmd += " -t {}".format(output_template_path)
+            invoke_cmd += f" -t {output_template_path}"
 
         deploy_cmd = "sam deploy --guided"
         if not is_default_build_dir:
-            deploy_cmd += " --template-file {}".format(output_template_path)
+            deploy_cmd += f" --template-file {output_template_path}"
 
-        msg = """\nBuilt Artifacts  : {artifacts_dir}
+        return """\nBuilt Artifacts  : {artifacts_dir}
 Built Template   : {template}
 
 Commands you can use next
@@ -270,10 +271,11 @@ Commands you can use next
 [*] Test Function in the Cloud: sam sync --stack-name {{stack-name}} --watch
 [*] Deploy: {deploycmd}
         """.format(
-            invokecmd=invoke_cmd, deploycmd=deploy_cmd, artifacts_dir=artifacts_dir, template=output_template_path
+            invokecmd=invoke_cmd,
+            deploycmd=deploy_cmd,
+            artifacts_dir=artifacts_dir,
+            template=output_template_path,
         )
-
-        return msg
 
     @staticmethod
     def _setup_build_dir(build_dir: str, clean: bool) -> str:
@@ -341,10 +343,7 @@ Commands you can use next
 
     @property
     def manifest_path_override(self) -> Optional[str]:
-        if self._manifest_path:
-            return os.path.abspath(self._manifest_path)
-
-        return None
+        return os.path.abspath(self._manifest_path) if self._manifest_path else None
 
     @property
     def mode(self) -> Optional[str]:
@@ -464,7 +463,7 @@ Commands you can use next
         if not layer:
             # No layer found
             return
-        if layer and layer.build_method is None:
+        if layer.build_method is None:
             LOG.error("Layer %s is missing BuildMethod Metadata.", self._function_provider)
             raise MissingBuildMethodException(f"Build method missing in layer {resource_identifier}.")
 
@@ -537,12 +536,12 @@ Commands you can use next
         function_runtimes = {function.runtime for function in resources_to_build.functions if function.runtime}
         layer_build_methods = {layer.build_method for layer in resources_to_build.layers if layer.build_method}
 
-        is_building_java = False
-        for runtime_or_build_method in set.union(function_runtimes, layer_build_methods):
-            if runtime_or_build_method.startswith("java"):
-                is_building_java = True
-                break
-
+        is_building_java = any(
+            runtime_or_build_method.startswith("java")
+            for runtime_or_build_method in set.union(
+                function_runtimes, layer_build_methods
+            )
+        )
         if is_building_java and not is_experimental_enabled(ExperimentalFlag.JavaMavenBuildScope):
             click.secho(self._JAVA_BUILD_WARNING_MESSAGE, fg="yellow")
 
@@ -551,11 +550,10 @@ Commands you can use next
         Prints warning message and confirms that the user wants to enable beta features
         """
         resources_to_build = self.get_resources_to_build()
-        is_building_esbuild = False
-        for function in resources_to_build.functions:
-            if function.metadata and function.metadata.get("BuildMethod", "") == "esbuild":
-                is_building_esbuild = True
-                break
-
+        is_building_esbuild = any(
+            function.metadata
+            and function.metadata.get("BuildMethod", "") == "esbuild"
+            for function in resources_to_build.functions
+        )
         if is_building_esbuild:
             prompt_experimental(ExperimentalFlag.Esbuild, self._ESBUILD_WARNING_MESSAGE)

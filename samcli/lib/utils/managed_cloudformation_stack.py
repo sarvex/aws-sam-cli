@@ -134,7 +134,7 @@ def _check_sanity_of_stack(stack):
     # Sanity check for non-none stack? Sanity check for tag?
     try:
         sam_cli_tag = next(t for t in tags if t["Key"] == "ManagedStackSource")
-        if not sam_cli_tag["Value"] == "AwsSamCli":
+        if sam_cli_tag["Value"] != "AwsSamCli":
             msg = (
                 "Stack "
                 + stack_name
@@ -146,7 +146,8 @@ def _check_sanity_of_stack(stack):
             raise UserException(msg)
     except StopIteration as ex:
         msg = (
-            "Stack  " + stack_name + " exists, but the ManagedStackSource tag is missing. "
+            f"Stack  {stack_name}"
+            + " exists, but the ManagedStackSource tag is missing. "
             "Failing as the stack was likely not created by the AWS SAM CLI."
         )
         raise UserException(msg) from ex

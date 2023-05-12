@@ -351,8 +351,8 @@ class BuildGraph:
                     updated_hash = stored_def.source_hash
                     old_manifest_hash = compared_def.manifest_hash
                     updated_manifest_hash = stored_def.manifest_hash
-                    uuid = stored_def.uuid
                     if old_hash != updated_hash or old_manifest_hash != updated_manifest_hash:
+                        uuid = stored_def.uuid
                         content[uuid] = BuildHashingInformation(updated_hash, updated_manifest_hash)
                     compared_def.download_dependencies = old_manifest_hash != updated_manifest_hash
         return content
@@ -644,11 +644,12 @@ class FunctionBuildDefinition(AbstractBuildDefinition):
         if self.metadata and self.metadata.get("BuildMethod", None) == "makefile":
             return False
 
-        if self.metadata and self.metadata.get("BuildMethod", None) == "esbuild":
-            # For esbuild, we need to check if handlers within the same CodeUri are the same
-            # if they are different, it should create a separate build definition
-            if self.handler != other.handler:
-                return False
+        if (
+            self.metadata
+            and self.metadata.get("BuildMethod", None) == "esbuild"
+            and self.handler != other.handler
+        ):
+            return False
 
         return (
             self.runtime == other.runtime

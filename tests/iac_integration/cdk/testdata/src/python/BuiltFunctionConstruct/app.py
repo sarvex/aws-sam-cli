@@ -7,7 +7,7 @@ def lambda_handler(event, context):
     depend1 = layer_version_dependency.get_dependency()
     depend2 = python_layer_version_dependency.get_dependency()
 
-    response = {
+    return {
         "statusCode": 200,
         "body": json.dumps(
             {
@@ -15,4 +15,3 @@ def lambda_handler(event, context):
             }
         ),
     }
-    return response

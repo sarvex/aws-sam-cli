@@ -151,10 +151,9 @@ class ApiCollector:
         grouped_routes: Dict[str, Route] = {}
 
         for route in routes:
-            key = "{}-{}-{}-{}".format(route.stack_path, route.function_name, route.path, route.operation_name or "")
-            config = grouped_routes.get(key, None)
+            key = f'{route.stack_path}-{route.function_name}-{route.path}-{route.operation_name or ""}'
             methods = route.methods
-            if config:
+            if config := grouped_routes.get(key, None):
                 methods += config.methods
             sorted_methods = sorted(methods)
             grouped_routes[key] = Route(
@@ -183,10 +182,7 @@ class ApiCollector:
 
         binary_media_types = binary_media_types or []
         for value in binary_media_types:
-            normalized_value = self.normalize_binary_media_type(value)
-
-            # If the value is not supported, then just skip it.
-            if normalized_value:
+            if normalized_value := self.normalize_binary_media_type(value):
                 self.binary_media_types_set.add(normalized_value)
             else:
                 LOG.debug("Unsupported data type of binary media type value of resource '%s'", logical_id)
@@ -208,7 +204,4 @@ class ApiCollector:
             Normalized value. If the input was not a string, then None is returned
         """
 
-        if not isinstance(value, str):
-            return None
-
-        return value.replace("~1", "/")
+        return None if not isinstance(value, str) else value.replace("~1", "/")

@@ -602,10 +602,6 @@ class SingletonFileObserver(metaclass=Singleton):
 def calculate_checksum(path: str) -> Optional[str]:
     try:
         path_obj = Path(path)
-        if path_obj.is_file():
-            checksum = file_checksum(path)
-        else:
-            checksum = dir_checksum(path)
-        return checksum
+        return file_checksum(path) if path_obj.is_file() else dir_checksum(path)
     except Exception:
         return None

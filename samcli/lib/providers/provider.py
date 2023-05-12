@@ -196,7 +196,7 @@ class LayerVersion:
         if metadata is None:
             metadata = {}
         if not isinstance(arn, str):
-            raise UnsupportedIntrinsic("{} is an Unsupported Intrinsic".format(arn))
+            raise UnsupportedIntrinsic(f"{arn} is an Unsupported Intrinsic")
 
         self._stack_path = stack_path
         self._arn = arn
@@ -236,7 +236,7 @@ class LayerVersion:
             _, layer_version = arn.rsplit(":", 1)
             return int(layer_version)
         except ValueError as ex:
-            raise InvalidLayerVersionArn(arn + " is an Invalid Layer Arn.") from ex
+            raise InvalidLayerVersionArn(f"{arn} is an Invalid Layer Arn.") from ex
 
     @staticmethod
     def _compute_layer_name(is_defined_within_template: bool, arn: str) -> str:
@@ -267,10 +267,14 @@ class LayerVersion:
         try:
             _, layer_name, layer_version = arn.rsplit(":", 2)
         except ValueError as ex:
-            raise InvalidLayerVersionArn(arn + " is an Invalid Layer Arn.") from ex
+            raise InvalidLayerVersionArn(f"{arn} is an Invalid Layer Arn.") from ex
 
         return LayerVersion.LAYER_NAME_DELIMETER.join(
-            [layer_name, layer_version, hashlib.sha256(arn.encode("utf-8")).hexdigest()[0:10]]
+            [
+                layer_name,
+                layer_version,
+                hashlib.sha256(arn.encode("utf-8")).hexdigest()[:10],
+            ]
         )
 
     @property
@@ -598,9 +602,7 @@ def get_full_path(stack_path: str, resource_id: str) -> str:
     Return the unique posix path-like identifier
     while will used for identify a resource from resources in a multi-stack situation
     """
-    if not stack_path:
-        return resource_id
-    return posixpath.join(stack_path, resource_id)
+    return posixpath.join(stack_path, resource_id) if stack_path else resource_id
 
 
 def get_resource_by_id(
@@ -683,7 +685,7 @@ def get_resource_ids_by_type(stacks: List[Stack], resource_type: str) -> List[Re
     List[ResourceIdentifier]
         List of ResourceIdentifiers with the type provided
     """
-    resource_ids: List[ResourceIdentifier] = list()
+    resource_ids: List[ResourceIdentifier] = []
     for stack in stacks:
         for logical_id, resource in stack.resources.items():
             resource_id = ResourceMetadataNormalizer.get_resource_id(resource, logical_id)
@@ -705,7 +707,7 @@ def get_all_resource_ids(stacks: List[Stack]) -> List[ResourceIdentifier]:
     List[ResourceIdentifier]
         List of ResourceIdentifiers
     """
-    resource_ids: List[ResourceIdentifier] = list()
+    resource_ids: List[ResourceIdentifier] = []
     for stack in stacks:
         for logical_id, resource in stack.resources.items():
             resource_id = ResourceMetadataNormalizer.get_resource_id(resource, logical_id)

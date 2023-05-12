@@ -44,10 +44,10 @@ def get_physical_id_mapping(
     """
     resource_summaries = get_resource_summaries(boto_resource_provider, stack_name, resource_types)
 
-    resource_physical_id_map: Dict[str, str] = {}
-    for resource_summary in resource_summaries:
-        resource_physical_id_map[resource_summary.logical_resource_id] = resource_summary.physical_resource_id
-
+    resource_physical_id_map: Dict[str, str] = {
+        resource_summary.logical_resource_id: resource_summary.physical_resource_id
+        for resource_summary in resource_summaries
+    }
     return resource_physical_id_map
 
 
